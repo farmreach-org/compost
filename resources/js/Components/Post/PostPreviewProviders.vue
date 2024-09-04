@@ -8,6 +8,7 @@ import Panel from "@/Components/Surface/Panel.vue";
 import Alert from "@/Components/Util/Alert.vue";
 import ProviderIcon from "../Account/ProviderIcon.vue";
 import ArrowTopRightOnSquare from "../../Icons/ArrowTopRightOnSquare.vue";
+import PostPreviewFarminsta from "@/Components/PostPreview/PostPreviewFarminsta.vue";
 
 const props = defineProps({
     accounts: {
@@ -37,7 +38,8 @@ const previews = computed(() => {
                 'twitter': PostPreviewTwitter,
                 'facebook_page': PostPreviewFacebook,
                 'facebook_group': PostPreviewFacebook,
-                'mastodon': PostPreviewMastodon
+                'mastodon': PostPreviewMastodon,
+                'farminsta_reels': PostPreviewFarminsta,
             }[account.provider]
         }
     });

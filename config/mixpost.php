@@ -82,6 +82,16 @@ return [
      * You only change them when the API policy of the social networks changes, and you know what you are doing.
      */
     'social_provider_options' => [
+        'farminsta_reels' => [
+            'simultaneous_posting_on_multiple_accounts' => true,
+            'post_character_limit' => 200,
+            'media_limit' => [
+                'photos' => 0,
+                'videos' => 1,
+                'gifs' => 0,
+                'allow_mixing' => false,
+            ]
+        ],
         'twitter' => [
             'simultaneous_posting_on_multiple_accounts' => false,
             'post_character_limit' => 280,

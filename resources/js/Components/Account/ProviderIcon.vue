@@ -4,6 +4,7 @@ import useProviderClassesColor from "@/Composables/useProviderClassesColor";
 import TwitterIcon from "@/Icons/Twitter.vue";
 import FacebookIcon from "@/Icons/Facebook.vue";
 import MastodonIcon from "@/Icons/Mastodon.vue";
+import FarminstaIcon from "@/Icons/Farminsta.vue";
 
 const props = defineProps({
     provider: {
@@ -18,6 +19,7 @@ const providers = {
     'facebook_page': FacebookIcon,
     'facebook_group': FacebookIcon,
     'mastodon': MastodonIcon,
+    'farminsta_reels': FarminstaIcon,
 };
 
 const component = computed(() => {

@@ -77,7 +77,8 @@ module.exports = {
                 },
                 facebook: '#1877f2',
                 twitter: '#000000',
-                mastodon: '#6364FF'
+                mastodon: '#6364FF',
+                farminsta: '#277450'
             },
             boxShadow: {
                 'mix': '0 5px 10px rgb(55 55 89 / 8%)',

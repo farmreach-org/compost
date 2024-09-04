@@ -7,7 +7,8 @@ const useProviderClassesColor = (provider) => {
             'facebook': 'text-facebook',
             'facebook_page': 'text-facebook',
             'facebook_group': 'text-facebook',
-            'mastodon': 'text-mastodon'
+            'mastodon': 'text-mastodon',
+            'farminsta_reels': 'text-facebook',
         }[provider];
     });
 
@@ -17,7 +18,8 @@ const useProviderClassesColor = (provider) => {
             'facebook': 'border-facebook',
             'facebook_page': 'border-facebook',
             'facebook_group': 'border-facebook',
-            'mastodon': 'border-mastodon'
+            'mastodon': 'border-mastodon',
+            'farminsta_reels': 'border-facebook',
         }[provider];
     });
 
@@ -27,7 +29,8 @@ const useProviderClassesColor = (provider) => {
             'facebook': 'bg-facebook',
             'facebook_page': 'bg-facebook',
             'facebook_group': 'bg-facebook',
-            'mastodon': 'bg-mastodon'
+            'mastodon': 'bg-mastodon',
+            'farminsta_reels': 'bg-facebook',
         }[provider];
     });
 

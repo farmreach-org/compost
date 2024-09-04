@@ -56,8 +56,8 @@ class MediaUploader
 
     public function upload(): array
     {
-        $path = $this->filesystem()->putFile($this->path, $this->file, 'public');
-
+//        $path = $this->filesystem()->putFile($this->path, $this->file, 'public');
+        $path = \Storage::disk('s3')->putFile($this->path, $this->file, 'public');
         if (!$path) {
             throw new \Exception("The file was not uploaded. Check your $this->disk driver configuration.");
         }

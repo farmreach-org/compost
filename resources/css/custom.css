@@ -34,6 +34,11 @@
     .link-lighter {
         @apply text-blue-300 hover:text-blue-200 transition-colors ease-in-out duration-200;
     }
+
+    .text-facebook {
+        width: 25px;
+        height: 25px;
+    }
 }
 
 @layer utilities {
