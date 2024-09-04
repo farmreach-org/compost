@@ -9,7 +9,7 @@ return [
     /*
     * If you use another model for users, you can change it here.
     */
-    'user_model' => \Inovector\Mixpost\Models\User::class,
+    'user_model' => \App\Models\User::class,
 
     /*
      * Mixpost will redirect unauthorized users to the route name specified here

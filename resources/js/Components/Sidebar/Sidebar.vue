@@ -19,7 +19,7 @@ import UserMenu from "../Navigation/UserMenu.vue";
     <div class="w-full h-full flex flex-col py-2xl bg-white border-r border-gray-200">
         <div class="relative mb-12 px-xl">
             <Link :href="route('mixpost.dashboard')">
-                <Logo class="h-12"/>
+                <Logo class=""/>
             </Link>
         </div>
 

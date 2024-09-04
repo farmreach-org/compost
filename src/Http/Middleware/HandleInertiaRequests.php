@@ -66,7 +66,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'mixpost' => [
                 'docs_link' => 'https://docs.mixpost.app',
-                'version' => InstalledVersions::getVersion('inovector/mixpost'),
+                'version' => InstalledVersions::getVersion('farminsta/compost'),
                 'mime_types' => Config::get('mixpost.mime_types'),
                 'settings' => [
                     'timezone' => Settings::get('timezone'),
@@ -89,9 +89,9 @@ class HandleInertiaRequests extends Middleware
 
         // If `Auth Middleware` was not resolved first
         // return empty auth
-        if (!$user instanceof User) {
-            return [];
-        }
+//        if (!$user instanceof User) {
+//            return [];
+//        }
 
         return [
             'user' => new UserResource($user),
