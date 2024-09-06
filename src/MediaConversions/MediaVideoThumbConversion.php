@@ -43,6 +43,7 @@ class MediaVideoThumbConversion extends MediaConversion
         $file = $temporaryDirectory->path($this->getFilepath());
         $thumbFilepath = $this->getFilePathWithSuffix('jpg', $file);
 
+        \Log::error('to=' . $this->getToDisk() . '; from=' . $this->getFromDisk() . ' filePath=' . $this->getFilepath());
         MediaFilesystem::copyFromDisk($this->getFilepath(), $this->getFromDisk(), $file);
 
         // Convert

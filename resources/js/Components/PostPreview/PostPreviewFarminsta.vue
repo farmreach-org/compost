@@ -34,25 +34,29 @@ const mainContent = computed(()=> {
 <template>
     <Panel class="relative">
         <div class="flex items-start">
-            <div class="mr-sm">
-                <span class="inline-flex justify-center items-center flex-shrink-0 w-10 h-10 rounded-full">
-                    <img :src="image"
-                         class="object-cover w-full h-full rounded-full" alt=""/>
-                </span>
-            </div>
+
             <div class="w-full">
-                <EditorReadOnly :value="mainContent.body"
-                                :class="{'mt-xs': !isDocEmpty(mainContent.body), 'mb-xs': mainContent.media.length}"/>
 
                 <Gallery :media="mainContent.media"/>
 
-                <div class="flex items-center">
-                    <div class="font-medium mr-xs">{{ name }}</div>
-                    <div class="text-gray-400">@{{ username }}</div>
+                <div class="flex mt-2 bg-lin">
+                    <div>
+                        <span class="inline-flex justify-center items-center flex-shrink-0 w-10 h-10 rounded-full">
+                            <img :src="image" class="object-cover w-full h-full rounded-full" alt=""/>
+                        </span>
+                    </div>
+                    <div>
+<!--                        <div class="flex items-center">-->
+                            <div class="font-medium mr-xs">{{ name }}</div>
+<!--                            <div class="text-gray-400">@{{ username }}</div>-->
+<!--                        </div>-->
+                        <div>
+                            <EditorReadOnly :value="mainContent.body" />
+                        </div>
+                    </div>
                 </div>
 
-
-                <div v-tooltip="REPRESENTATIVE_DATA_TEXT" class="mt-5 flex items-center justify-between">
+                <div v-tooltip="REPRESENTATIVE_DATA_TEXT" class="h-full right-0 mt-5 flex items-center justify-between">
                     <div class="flex items-center">
                         <svg class="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
                             <g>

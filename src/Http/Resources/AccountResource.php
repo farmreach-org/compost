@@ -3,6 +3,7 @@
 namespace Inovector\Mixpost\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Inovector\Mixpost\SocialProviders\FarminstaProvider;
 use Inovector\Mixpost\SocialProviders\Mastodon\MastodonProvider;
 use Inovector\Mixpost\SocialProviders\Meta\FacebookGroupProvider;
 use Inovector\Mixpost\SocialProviders\Meta\FacebookPageProvider;
@@ -42,6 +43,7 @@ class AccountResource extends JsonResource
             'facebook_page' => FacebookPageProvider::externalPostUrl($this),
             'facebook_group' => FacebookGroupProvider::externalPostUrl($this),
             'mastodon' => MastodonProvider::externalPostUrl($this),
+            'farminsta_reels' => FarminstaProvider::externalPostUrl($this),
             default => '#'
         };
     }

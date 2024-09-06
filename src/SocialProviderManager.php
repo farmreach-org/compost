@@ -4,6 +4,7 @@ namespace Inovector\Mixpost;
 
 use Inovector\Mixpost\Abstracts\SocialProviderManager as SocialProviderManagerAbstract;
 use Inovector\Mixpost\Facades\Services;
+use Inovector\Mixpost\SocialProviders\FarminstaProvider;
 use Inovector\Mixpost\SocialProviders\Meta\FacebookGroupProvider;
 use Inovector\Mixpost\SocialProviders\Meta\FacebookPageProvider;
 use Inovector\Mixpost\SocialProviders\Twitter\TwitterProvider;
@@ -27,6 +28,10 @@ class SocialProviderManager extends SocialProviderManagerAbstract
         $config['redirect'] = route('mixpost.callbackSocialProvider', ['provider' => 'facebook_page']);
 
         return $this->buildConnectionProvider(FacebookPageProvider::class, $config);
+    }
+
+    protected function connectFarminstaReelsProvider() {
+        return new FarminstaProvider($this->container->make('request'), '', '', '');
     }
 
 // @deprecated

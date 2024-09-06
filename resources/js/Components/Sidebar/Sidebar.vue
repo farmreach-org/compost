@@ -104,11 +104,11 @@ import UserMenu from "../Navigation/UserMenu.vue";
         <div class="absolute bottom-0 mb-sm w-full">
             <MenuDelimiter/>
             <div class="flex flex-col items-start px-xl mt-sm">
-                <div class="text-sm text-gray-500 mb-xs">Lite version: {{ $page.props.mixpost.version }}</div>
-                <a href="https://mixpost.app/pricing"
-                   class="text-indigo-500 hover:text-indigo-400 transition-colors ease-in-out duration-200 text-sm">
-                    Upgrade to Pro
-                </a>
+                <div class="text-sm text-gray-500 mb-xs">Version version: {{ $page.props.mixpost.version }}</div>
+<!--                <a href="https://mixpost.app/pricing"-->
+<!--                   class="text-indigo-500 hover:text-indigo-400 transition-colors ease-in-out duration-200 text-sm">-->
+<!--                    Upgrade to Pro-->
+<!--                </a>-->
             </div>
         </div>
     </div>
