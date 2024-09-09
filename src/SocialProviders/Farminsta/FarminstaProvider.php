@@ -1,6 +1,6 @@
 <?php
 
-namespace Inovector\Mixpost\SocialProviders;
+namespace Inovector\Mixpost\SocialProviders\Farminsta;
 
 use Closure;
 use Illuminate\Support\Collection;
