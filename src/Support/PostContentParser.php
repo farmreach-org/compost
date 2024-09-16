@@ -2,6 +2,7 @@
 
 namespace Inovector\Mixpost\Support;
 
+use App\Services\LinkService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Inovector\Mixpost\Models\Account;
@@ -65,7 +66,11 @@ class PostContentParser
 
         $decode = html_entity_decode($result);
 
-        return strip_tags($decode);
+        $values = $this->account->values();
+        $user_id = $values['data']['user_id'] ?? '';
+        $link = app()->make(LinkService::class)->generateLink($user_id, 'https://app.farminsta.com/', 'invite')->getFullUrl();
+
+        return $link . "\n\n" . strip_tags($decode);
     }
 
     public function formatMedia(array $ids): Collection

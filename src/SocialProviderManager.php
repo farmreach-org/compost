@@ -31,7 +31,9 @@ class SocialProviderManager extends SocialProviderManagerAbstract
     }
 
     protected function connectFarminstaReelsProvider() {
-        return new FarminstaProvider($this->container->make('request'), '', '', '');
+        $provider =  new FarminstaProvider($this->container->make('request'), '', '', '', $this->values);
+
+        return $provider;
     }
 
 // @deprecated

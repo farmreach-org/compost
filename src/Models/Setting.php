@@ -29,5 +29,14 @@ class Setting extends Model
         static::deleted(function ($setting) {
             SettingsFacade::forget($setting->name);
         });
+
+        static::addGlobalScope('account', function (\Illuminate\Database\Eloquent\Builder $builder) {
+            /** @var \App\Models\User $user */
+            $user = \Auth::guard('web')->user();
+            if ($user) {
+                \Log::error('Scoping settings to account_id=' . $user->account_id);
+                $builder->where('account_id', '=', $user->account_id);
+            }
+        });
     }
 }

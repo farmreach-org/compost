@@ -33,6 +33,17 @@ class Media extends Model
         'conversions' => 'array'
     ];
 
+    protected static function booted()
+    {
+        static::addGlobalScope('account', function (\Illuminate\Database\Eloquent\Builder $builder) {
+            /** @var \App\Models\User $user */
+            $user = \Auth::guard('web')->user();
+            if ($user) {
+                $builder->where('account_id', '=', $user->account_id);
+            }
+        });
+    }
+
     public function getFullPath(): string
     {
         if ($this->disk === 'external_media') {

@@ -15,4 +15,15 @@ class Tag extends Model
         'name',
         'hex_color'
     ];
+
+    protected static function booted()
+    {
+        static::addGlobalScope('account', function (\Illuminate\Database\Eloquent\Builder $builder) {
+            /** @var \App\Models\User $user */
+            $user = \Auth::guard('web')->user();
+            if ($user) {
+                $builder->where('account_id', '=', $user->account_id);
+            }
+        });
+    }
 }

@@ -48,6 +48,14 @@ class Account extends Model
                 Storage::disk($account->media['disk'])->delete($account->media['path']);
             }
         });
+
+        static::addGlobalScope('account', function (\Illuminate\Database\Eloquent\Builder $builder) {
+            /** @var \App\Models\User $user */
+            $user = \Auth::guard('web')->user();
+            if ($user) {
+                $builder->where('account_id', '=', $user->account_id);
+            }
+        });
     }
 
     public function image(): ?string

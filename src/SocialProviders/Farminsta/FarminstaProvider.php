@@ -3,6 +3,8 @@
 namespace Inovector\Mixpost\SocialProviders\Farminsta;
 
 use App\Commands\UserCreatesReelCommand;
+use App\Models\Reel;
+use App\Services\LinkService;
 use Closure;
 use Illuminate\Support\Collection;
 use Inovector\Mixpost\Abstracts\SocialProvider;
@@ -36,14 +38,25 @@ class FarminstaProvider extends SocialProvider
 
     public function publishPost(string $text, Collection $media, array $params = []): SocialProviderResponse
     {
+        \Log::error(json_encode([
+            $text,
+            $media,
+            $media->first()->getUrl(),
+            $params,
+            $this->values,
+        ], JSON_PRETTY_PRINT));
+
+
         $channel_id = $this->values['provider_id'];
         $user_id = $this->values['data']['user_id'];
-        /** @var Media $media */
-        $media = $media->first();
+        $link = app()->make(LinkService::class)->generateLink($user_id, 'https://app.farminsta.com/', 'invite')->getFullUrl();
+
+        /** @var Media $video */
+        $video = $media->first();
 
         $command = new UserCreatesReelCommand(
             $user_id,
-            $media->getUrl(),
+            $video->getUrl(),
             'Mixpost title',
             $text,
             '#farminsta',
@@ -68,8 +81,14 @@ class FarminstaProvider extends SocialProvider
             false,
         );
 
-        $responses = event($command);
-        return new SocialProviderResponse(SocialProviderResponseStatus::OK, []);
+        $responses = \Event::dispatch($command);
+        $reel = Reel::whereS3Path($video->getUrl())->first();
+        \Log::error(json_encode($responses));
+        \Log::error(json_encode($media));
+        \Log::error(json_encode($reel));
+        return new SocialProviderResponse(SocialProviderResponseStatus::OK, [
+            'id' => $reel?->id,
+        ]);
     }
 
     public function deletePost($id): SocialProviderResponse
