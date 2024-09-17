@@ -33,7 +33,7 @@ Route::middleware([
     'web',
     MixpostAuthMiddleware::class,
     HandleInertiaRequests::class
-])->prefix('mixpost')
+])->prefix('compost')
     ->name('mixpost.')
     ->group(function () {
         Route::get('/', DashboardController::class)->name('dashboard');

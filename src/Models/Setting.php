@@ -2,16 +2,20 @@
 
 namespace Inovector\Mixpost\Models;
 
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Model;
 use Inovector\Mixpost\Facades\Settings as SettingsFacade;
+use Inovector\Mixpost\Models\Scopes\CompostAccountScope;
 
+#[ScopedBy([CompostAccountScope::class])]
 class Setting extends Model
 {
     public $table = 'mixpost_settings';
 
     protected $fillable = [
         'name',
-        'payload'
+        'payload',
+        'account_id',
     ];
 
     protected $casts = [
@@ -30,12 +34,15 @@ class Setting extends Model
             SettingsFacade::forget($setting->name);
         });
 
-        static::addGlobalScope('account', function (\Illuminate\Database\Eloquent\Builder $builder) {
-            /** @var \App\Models\User $user */
-            $user = \Auth::guard('web')->user();
-            if ($user) {
-                \Log::error('Scoping settings to account_id=' . $user->account_id);
-                $builder->where('account_id', '=', $user->account_id);
+        static::created(function (?Setting $setting) {
+            if (!$setting->account_id) {
+                $accountId = '';
+                $user = \Auth::guard('web')->user();
+                if ($user) {
+                    $accountId = $user->account_id;
+                }
+                $setting->account_id = $accountId;
+                $setting->save();
             }
         });
     }

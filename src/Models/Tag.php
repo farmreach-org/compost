@@ -2,9 +2,12 @@
 
 namespace Inovector\Mixpost\Models;
 
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Inovector\Mixpost\Models\Scopes\CompostAccountScope;
 
+#[ScopedBy([CompostAccountScope::class])]
 class Tag extends Model
 {
     use HasFactory;
@@ -13,16 +16,21 @@ class Tag extends Model
 
     protected $fillable = [
         'name',
-        'hex_color'
+        'hex_color',
+        'account_id',
     ];
 
     protected static function booted()
     {
-        static::addGlobalScope('account', function (\Illuminate\Database\Eloquent\Builder $builder) {
-            /** @var \App\Models\User $user */
-            $user = \Auth::guard('web')->user();
-            if ($user) {
-                $builder->where('account_id', '=', $user->account_id);
+        static::created(function (?Tag $tag) {
+            if (!$tag->account_id) {
+                $accountId = '';
+                $user = \Auth::guard('web')->user();
+                if ($user) {
+                    $accountId = $user->account_id;
+                }
+                $tag->account_id = $accountId;
+                $tag->save();
             }
         });
     }

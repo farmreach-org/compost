@@ -3,15 +3,18 @@
 namespace Inovector\Mixpost\Models;
 
 use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Inovector\Mixpost\Models\Scopes\CompostAccountScope;
 use Inovector\Mixpost\Support\MediaFilesystem;
 use Inovector\Mixpost\Support\MediaTemporaryDirectory;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 
+#[ScopedBy([CompostAccountScope::class])]
 class Media extends Model
 {
     use HasFactory;
@@ -25,7 +28,8 @@ class Media extends Model
         'path',
         'size',
         'size_total',
-        'conversions'
+        'conversions',
+        'account_id'
     ];
 
     protected $casts = [
@@ -35,11 +39,15 @@ class Media extends Model
 
     protected static function booted()
     {
-        static::addGlobalScope('account', function (\Illuminate\Database\Eloquent\Builder $builder) {
-            /** @var \App\Models\User $user */
-            $user = \Auth::guard('web')->user();
-            if ($user) {
-                $builder->where('account_id', '=', $user->account_id);
+        static::created(function (?Media $media) {
+            if (!$media->account_id) {
+                $accountId = '';
+                $user = \Auth::guard('web')->user();
+                if ($user) {
+                    $accountId = $user->account_id;
+                }
+                $media->account_id = $accountId;
+                $media->save();
             }
         });
     }

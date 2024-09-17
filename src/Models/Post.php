@@ -2,6 +2,7 @@
 
 namespace Inovector\Mixpost\Models;
 
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -11,7 +12,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Inovector\Mixpost\Enums\PostScheduleStatus;
 use Inovector\Mixpost\Enums\PostStatus;
+use Inovector\Mixpost\Models\Scopes\CompostAccountScope;
 
+#[ScopedBy([CompostAccountScope::class])]
 class Post extends Model
 {
     use HasFactory;
@@ -33,11 +36,15 @@ class Post extends Model
 
     protected static function booted()
     {
-        static::addGlobalScope('account', function (\Illuminate\Database\Eloquent\Builder $builder) {
-            /** @var \App\Models\User $user */
-            $user = \Auth::guard('web')->user();
-            if ($user) {
-                $builder->where('account_id', '=', $user->account_id);
+        static::created(function (?Post $post) {
+            if (!$post->account_id) {
+                $accountId = '';
+                $user = \Auth::guard('web')->user();
+                if ($user) {
+                    $accountId = $user->account_id;
+                }
+                $post->account_id = $accountId;
+                $post->save();
             }
         });
     }

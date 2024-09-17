@@ -14,6 +14,12 @@ import PackageIcon from "@/Icons/Package.vue"
 import CogIcon from "@/Icons/Cog.vue"
 import ServerStackIcon from "@/Icons/ServerStack.vue"
 import UserMenu from "../Navigation/UserMenu.vue";
+import useAuth from "../../Composables/useAuth";
+
+const {user} = useAuth();
+const isSuperAdmin = user.email === 'nidheeshdas.t@farmreach.org';
+// console.log({user: user.value, isSuperAdmin});
+
 </script>
 <template>
     <div class="w-full h-full flex flex-col py-2xl bg-white border-r border-gray-200">
@@ -88,28 +94,30 @@ import UserMenu from "../Navigation/UserMenu.vue";
                     </template>
                     Settings
                 </MenuItem>
-                <MenuItem :url="route('mixpost.services.index')" :active="$page.component === 'Services'">
-                    <template #icon>
-                        <ServerStackIcon/>
-                    </template>
-                    Services
-                </MenuItem>
+                <template :if="isSuperAdmin">
+                    <MenuItem :url="route('mixpost.services.index')" :active="$page.component === 'Services'">
+                        <template #icon>
+                            <ServerStackIcon/>
+                        </template>
+                        Services
+                    </MenuItem>
+                </template>
             </MenuGroupBody>
         </div>
 
-        <div class="px-xl pt-md mb-[3.0rem]">
-            <UserMenu/>
-        </div>
+<!--        <div class="px-xl pt-md mb-[3.0rem]">-->
+<!--            <UserMenu/>-->
+<!--        </div>-->
 
-        <div class="absolute bottom-0 mb-sm w-full">
-            <MenuDelimiter/>
-            <div class="flex flex-col items-start px-xl mt-sm">
-                <div class="text-sm text-gray-500 mb-xs">Version version: {{ $page.props.mixpost.version }}</div>
+<!--        <div class="absolute bottom-0 mb-sm w-full">-->
+<!--            <MenuDelimiter/>-->
+<!--            <div class="flex flex-col items-start px-xl mt-sm">-->
+<!--                <div class="text-sm text-gray-500 mb-xs">Version version: {{ $page.props.mixpost.version }}</div>-->
 <!--                <a href="https://mixpost.app/pricing"-->
 <!--                   class="text-indigo-500 hover:text-indigo-400 transition-colors ease-in-out duration-200 text-sm">-->
 <!--                    Upgrade to Pro-->
 <!--                </a>-->
-            </div>
-        </div>
+<!--            </div>-->
+<!--        </div>-->
     </div>
 </template>

@@ -2,13 +2,16 @@
 
 namespace Inovector\Mixpost\Models;
 
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Inovector\Mixpost\Casts\EncryptArrayObject;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Inovector\Mixpost\Casts\AccountMediaCast;
+use Inovector\Mixpost\Models\Scopes\CompostAccountScope;
 
+#[ScopedBy([CompostAccountScope::class])]
 class Account extends Model
 {
     use HasFactory;
@@ -22,7 +25,8 @@ class Account extends Model
         'provider',
         'provider_id',
         'data',
-        'access_token'
+        'access_token',
+        'account_id'
     ];
 
     protected $casts = [
@@ -46,14 +50,6 @@ class Account extends Model
         static::deleted(function ($account) {
             if ($account->media) {
                 Storage::disk($account->media['disk'])->delete($account->media['path']);
-            }
-        });
-
-        static::addGlobalScope('account', function (\Illuminate\Database\Eloquent\Builder $builder) {
-            /** @var \App\Models\User $user */
-            $user = \Auth::guard('web')->user();
-            if ($user) {
-                $builder->where('account_id', '=', $user->account_id);
             }
         });
     }
