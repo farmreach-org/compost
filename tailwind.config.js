@@ -13,7 +13,7 @@ module.exports = {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                sans: ['Overpass', ...defaultTheme.fontFamily.sans],
             },
             colors: {
                 primary: {
@@ -22,7 +22,8 @@ module.exports = {
                     "200": "var(--color-primary-200)",
                     // "300": "#958FD6",
                     // "400": "#726AC8",
-                    "500": 'var(--color-primary-500)',
+                    // "500": 'var(--color-primary-500)',
+                    "500": "#277450",
                     // "600": "#3F3795",
                     "700": "var(--color-primary-700)",
                     "800": "var(--color-primary-800)",

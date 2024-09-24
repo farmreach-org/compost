@@ -19,7 +19,7 @@ class DevTools
 
     public static function ddIfAdmin(mixed ...$vars): void
     {
-        if (self::getAuthGuard()->user()->isAdmin()) {
+        if (self::getAuthGuard()->user()->isMixpostAdmin()) {
             dd($vars);
         }
     }

@@ -26,7 +26,7 @@ class HomeController extends Controller
         }
 
         if (!$workspace) {
-            if (Auth::user()->isAdmin()) {
+            if (Auth::user()->isMixpostAdmin()) {
                 return redirect()->to(route('mixpost.workspaces.create'));
             }
 

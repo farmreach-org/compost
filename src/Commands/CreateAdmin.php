@@ -38,7 +38,7 @@ class CreateAdmin extends Command
         }
 
         if ($user = self::getUserClass()::where('email', $email)->first()) {
-            if ($user->isAdmin()) {
+            if ($user->isMixpostAdmin()) {
                 $this->error('This user is already a Mixpost admin!');
                 return self::FAILURE;
             }

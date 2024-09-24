@@ -35,7 +35,7 @@ return new class extends Migration {
 
         Schema::create('mixpost_user_two_factor_auth', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('user_id')->unsigned()->index();
+            $table->ulid('user_id')->unsigned()->index();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->text('secret_key');
             $table->text('recovery_codes');
@@ -45,7 +45,7 @@ return new class extends Migration {
 
         Schema::create('mixpost_admins', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('user_id')->unsigned()->index();
+            $table->ulid('user_id')->unsigned()->index();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
@@ -67,7 +67,7 @@ return new class extends Migration {
 
         Schema::create('mixpost_workspace_user', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('user_id')->unsigned()->index();
+            $table->ulid('user_id')->unsigned()->index();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->bigInteger('workspace_id')->unsigned()->index();
             $table->foreign('workspace_id')->references('id')->on('mixpost_workspaces')->onUpdate('cascade')->onDelete('cascade');
@@ -106,7 +106,7 @@ return new class extends Migration {
             $table->id();
             $table->uuid('uuid')->unique();
             $table->bigInteger('workspace_id')->unsigned()->index();
-            $table->bigInteger('user_id')->unsigned()->index();
+            $table->ulid('user_id')->unsigned()->index();
             $table->tinyInteger('status')->default(0);
             $table->tinyInteger('schedule_status')->default(0);
             $table->dateTime('scheduled_at')->nullable();
@@ -202,7 +202,7 @@ return new class extends Migration {
 
         Schema::create('mixpost_settings', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('user_id')->unsigned()->index();
+            $table->ulid('user_id')->unsigned()->index();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('name');
             $table->json('payload');
@@ -319,7 +319,7 @@ return new class extends Migration {
 
         Schema::create('mixpost_user_tokens', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('user_id')->unsigned()->index();
+            $table->ulid('user_id')->unsigned()->index();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('name');
             $table->string('token', 64)->unique();

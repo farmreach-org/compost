@@ -55,11 +55,11 @@ class UpdateUser extends FormRequest
         $user->update($data);
 
         if ($user->id !== Auth::id()) {
-            if ($user->isAdmin() && !$this->input('is_admin')) {
+            if ($user->isMixpostAdmin() && !$this->input('is_admin')) {
                 $user->admin()->delete();
             }
 
-            if (!$user->isAdmin() && $this->input('is_admin')) {
+            if (!$user->isMixpostAdmin() && $this->input('is_admin')) {
                 $user->admin()->create();
             }
         }

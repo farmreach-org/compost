@@ -120,14 +120,14 @@ class HandleInertiaRequests extends Middleware
 
         // If `Auth Middleware` was not resolved first
         // return empty auth
-        if (!$user instanceof User) {
-            return [];
-        }
+//        if (!$user instanceof User) {
+//            return [];
+//        }
 
         $userResourceClass = self::getUserResourceClass();
 
         return [
-            'user' => new $userResourceClass($user->load(['admin', 'workspaces'])),
+            'user' => new $userResourceClass($user->load(['mixpostAdmin', 'workspaces'])),
             'impersonating' => Mixpost::impersonating(),
         ];
     }

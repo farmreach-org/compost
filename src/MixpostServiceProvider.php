@@ -164,11 +164,11 @@ class MixpostServiceProvider extends PackageServiceProvider
 
     protected function checkModelInstances(): void
     {
-        $userModel = $this->app->make(config('mixpost.user_model'));
-
-        if (!$userModel instanceof UserAbstract) {
-            throw new \Exception('The user model must be an instance of Inovector\Mixpost\Abstracts\User');
-        }
+//        $userModel = $this->app->make(config('mixpost.user_model'));
+//
+//        if (!$userModel instanceof UserAbstract) {
+//            throw new \Exception('The user model must be an instance of Inovector\Mixpost\Abstracts\User');
+//        }
     }
 
     protected function configureQueue(): void

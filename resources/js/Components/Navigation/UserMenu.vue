@@ -57,7 +57,8 @@ const openWorkspace = (workspace) => {
     });
 }
 
-const {enterpriseConsole} = useEnterpriseConsole()
+const {enterpriseConsole} = useEnterpriseConsole();
+console.log({enterpriseConsole});
 </script>
 <template>
     <Dropdown width-classes="w-64" placement="top-start">
