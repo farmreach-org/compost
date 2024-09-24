@@ -2,22 +2,24 @@
 
 namespace Inovector\Mixpost\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Contracts\Filesystem\Filesystem;
-use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Inovector\Mixpost\Models\Scopes\CompostAccountScope;
+use Inovector\Mixpost\Concerns\Model\HasUuid;
+use Inovector\Mixpost\Concerns\OwnedByWorkspace;
 use Inovector\Mixpost\Support\MediaFilesystem;
 use Inovector\Mixpost\Support\MediaTemporaryDirectory;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 
-#[ScopedBy([CompostAccountScope::class])]
 class Media extends Model
 {
     use HasFactory;
+    use HasUuid;
+    use OwnedByWorkspace;
 
     public $table = 'mixpost_media';
 
@@ -26,30 +28,30 @@ class Media extends Model
         'mime_type',
         'disk',
         'path',
+        'data',
         'size',
         'size_total',
-        'conversions',
-        'account_id'
+        'conversions'
     ];
 
     protected $casts = [
         'id' => 'string',
+        'data' => 'array',
         'conversions' => 'array'
     ];
 
-    protected static function booted()
+    protected function source(): Attribute
     {
-        static::created(function (?Media $media) {
-            if (!$media->account_id) {
-                $accountId = '';
-                $user = \Auth::guard('web')->user();
-                if ($user) {
-                    $accountId = $user->account_id;
-                }
-                $media->account_id = $accountId;
-                $media->save();
-            }
-        });
+        return Attribute::make(
+            get: fn(mixed $value, array $attributes) => json_decode($attributes['data'], true)['source'] ?? null,
+        );
+    }
+
+    protected function author(): Attribute
+    {
+        return Attribute::make(
+            get: fn(mixed $value, array $attributes) => json_decode($attributes['data'], true)['author'] ?? null,
+        );
     }
 
     public function getFullPath(): string

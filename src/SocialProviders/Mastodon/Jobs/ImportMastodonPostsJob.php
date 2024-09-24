@@ -11,20 +11,22 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Arr;
 use Inovector\Mixpost\Concerns\Job\HasSocialProviderJobRateLimit;
-use Inovector\Mixpost\Concerns\Job\SocialProviderJobFail;
+use Inovector\Mixpost\Concerns\Job\SocialProviderException;
 use Inovector\Mixpost\Concerns\UsesSocialProviderManager;
+use Inovector\Mixpost\Contracts\QueueWorkspaceAware;
+use Inovector\Mixpost\Facades\WorkspaceManager;
 use Inovector\Mixpost\Models\Account;
 use Inovector\Mixpost\Models\ImportedPost;
 use Inovector\Mixpost\SocialProviders\Mastodon\MastodonProvider;
 use Inovector\Mixpost\Support\SocialProviderResponse;
 
-class ImportMastodonPostsJob implements ShouldQueue
+class ImportMastodonPostsJob implements ShouldQueue, QueueWorkspaceAware
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     use UsesSocialProviderManager;
     use HasSocialProviderJobRateLimit;
-    use SocialProviderJobFail;
+    use SocialProviderException;
 
     public $deleteWhenMissingModels = true;
 
@@ -39,6 +41,14 @@ class ImportMastodonPostsJob implements ShouldQueue
 
     public function handle(): void
     {
+        if ($this->account->isUnauthorized()) {
+            return;
+        }
+
+        if (!$this->account->isServiceActive()) {
+            return;
+        }
+
         if ($retryAfter = $this->rateLimitExpiration()) {
             $this->release($retryAfter);
 
@@ -50,6 +60,13 @@ class ImportMastodonPostsJob implements ShouldQueue
          * @var SocialProviderResponse $response
          */
         $response = $this->connectProvider($this->account)->getUserStatuses($this->account->provider_id, $this->params['max_id'] ?? '');
+
+        if ($response->isUnauthorized()) {
+            $this->account->setUnauthorized();
+            $this->captureException($response);
+
+            return;
+        }
 
         if ($response->hasExceededRateLimit()) {
             $this->storeRateLimitExceeded($response->retryAfter(), $response->isAppLevel());
@@ -63,7 +80,7 @@ class ImportMastodonPostsJob implements ShouldQueue
         }
 
         if ($response->hasError()) {
-            $this->makeFail($response);
+            $this->captureException($response);
 
             return;
         }
@@ -89,6 +106,7 @@ class ImportMastodonPostsJob implements ShouldQueue
     {
         $data = Arr::map($items, function ($item) {
             return [
+                'workspace_id' => WorkspaceManager::current()->id,
                 'account_id' => $this->account->id,
                 'provider_post_id' => $item['id'],
                 'content' => json_encode(['text' => $item['content']]),
@@ -97,10 +115,10 @@ class ImportMastodonPostsJob implements ShouldQueue
                     'reblogs' => $item['reblogs_count'],
                     'favourites' => $item['favourites_count'],
                 ]),
-                'created_at' => Carbon::parse($item['created_at'], 'UTC')->toDateString()
+                'created_at' => Carbon::parse($item['created_at'], 'UTC')->toDateTimeString()
             ];
         });
 
-        ImportedPost::upsert($data, ['account_id', 'provider_post_id'], ['content', 'metrics']);
+        ImportedPost::upsert($data, ['workspace_id', 'account_id', 'provider_post_id'], ['content', 'metrics']);
     }
 }

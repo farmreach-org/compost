@@ -4,9 +4,11 @@ namespace Inovector\Mixpost;
 
 use DateTimeInterface;
 use DateTimeZone;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use Inovector\Mixpost\Facades\Settings;
 
 class Util
@@ -16,17 +18,37 @@ class Util
         return Config::get("mixpost.$key", $default);
     }
 
+    public static function corePath(): string
+    {
+        return self::config('core_path', 'mixpost');
+    }
+
+    public static function appName(): string
+    {
+        return Config::get('app.name');
+    }
+
     public static function isMixpostRequest(Request $request): bool
     {
-        $path = 'mixpost';
+        $path = self::corePath();
 
         return $request->is($path) ||
             $request->is("$path/*");
     }
 
+    public static function isHorizonRequest(): bool
+    {
+        return request()->route() && request()->route()->getPrefix() === 'horizon/api';
+    }
+
     public static function convertTimeToUTC(string|DateTimeInterface|null $time = null, DateTimeZone|string|null $tz = null): Carbon
     {
         return Carbon::parse($time, $tz ?: Settings::get('timezone'))->utc();
+    }
+
+    public static function dateTimeFormat(Carbon $datetime): string
+    {
+        return $datetime->tz(Settings::get('timezone'))->translatedFormat('M j, Y | ' . self::timeFormat());
     }
 
     public static function timeFormat(): string
@@ -43,6 +65,11 @@ class Util
         $text = trim(strip_tags($string));
 
         return html_entity_decode($text);
+    }
+
+    public static function isAdminConsole(Request $request): bool
+    {
+        return $request->route() && Str::contains($request->route()->getPrefix(), (Util::corePath() . '/admin'));
     }
 
     public static function isPublicDomainUrl(string $url): bool
@@ -68,5 +95,73 @@ class Util
         }
 
         return true;
+    }
+
+    public static function estimateUploadTimeout(int $size, int $defaultTimeout = 30)
+    {
+        $uploadSpeed = 2 * 1024 * 1024; // 2MB/s
+        $estimatedTimeout = $size / $uploadSpeed;
+
+        return max($estimatedTimeout, $defaultTimeout);
+    }
+
+    public static function estimateDelayByFileSize(int $fileSize): array
+    {
+        $initial = (int)round(max(15, $fileSize / 1000000)); // Set a delay proportional to the file size
+        $max = (int)round(min(5 * 60, $fileSize / 500000)); // Set a max delay proportional to the file size
+
+        return [
+            'initial' => $initial,
+            'max' => $max
+        ];
+    }
+
+    public static function closeAndDeleteStreamResource(array $stream): void
+    {
+        if (is_resource($stream['stream'])) {
+            fclose($stream['stream']);
+        }
+
+        $stream['temporaryDirectory']?->delete();
+    }
+
+    public static function performHttpRequestWithTimeoutRetries(callable $httpRequestFunction, int $timeout = 30, int $maxAttempts = 3)
+    {
+        $startTimeout = $timeout;
+
+        for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
+            try {
+                return $httpRequestFunction($timeout);
+            } catch (ConnectionException $e) {
+                $timeout += $startTimeout;
+            }
+        }
+
+        return null;
+    }
+
+    public static function performTaskWithDelay(callable $task, int $initialDelay = 15, int $maxDelay = 60, int $maxAttempts = 10)
+    {
+        $delay = $initialDelay;
+        $attempt = 0;
+
+        while ($attempt < $maxAttempts) {
+            $result = $task();
+
+            if ($result !== null) {
+                return $result;
+            }
+
+            sleep($delay);
+
+            // Increase delay for the next iteration, maxing out at maxDelay
+            $delay = min($delay * 2, $maxDelay);
+            // Add a random jitter to the delay
+            $delay += rand(-(int)($delay * 0.1), (int)($delay * 0.1));
+
+            $attempt++;
+        }
+
+        return null;
     }
 }

@@ -2,36 +2,45 @@
 
 namespace Inovector\Mixpost\Models;
 
-use Illuminate\Database\Eloquent\Attributes\ScopedBy;
-use Inovector\Mixpost\Casts\EncryptArrayObject;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Inovector\Mixpost\Casts\AccountMediaCast;
-use Inovector\Mixpost\Models\Scopes\CompostAccountScope;
+use Inovector\Mixpost\Casts\EncryptArrayObject;
+use Inovector\Mixpost\Concerns\Model\HasUuid;
+use Inovector\Mixpost\Concerns\OwnedByWorkspace;
+use Inovector\Mixpost\Contracts\SocialProvider;
+use Inovector\Mixpost\Facades\SocialProviderManager;
+use Inovector\Mixpost\SocialProviders\Mastodon\MastodonProvider;
+use Inovector\Mixpost\Support\AccountSuffix;
+use Inovector\Mixpost\Support\SocialProviderPostConfigs;
 
-#[ScopedBy([CompostAccountScope::class])]
 class Account extends Model
 {
     use HasFactory;
+    use HasUuid;
+    use OwnedByWorkspace;
 
     protected $table = 'mixpost_accounts';
 
     protected $fillable = [
+        'uuid',
         'name',
         'username',
         'media',
         'provider',
         'provider_id',
         'data',
-        'access_token',
-        'account_id'
+        'authorized',
+        'access_token'
     ];
 
     protected $casts = [
         'media' => AccountMediaCast::class,
         'data' => 'array',
+        'authorized' => 'boolean',
         'access_token' => EncryptArrayObject::class
     ];
 
@@ -39,19 +48,31 @@ class Account extends Model
         'access_token'
     ];
 
+    protected ?string $providerClass = null;
+
     protected static function booted()
     {
         static::updated(function ($account) {
-            if ($account->wasChanged('media')) {
+            if ($account->wasChanged('media') && Arr::has($account->getOriginal('media'), 'disk')) {
                 Storage::disk($account->getOriginal('media')['disk'])->delete($account->getOriginal('media')['path']);
             }
         });
 
         static::deleted(function ($account) {
-            if ($account->media) {
+            if ($account->media && Arr::has($account->media, 'disk')) {
                 Storage::disk($account->media['disk'])->delete($account->media['path']);
             }
         });
+    }
+
+    public function scopeProvider(Builder $query, string|SocialProvider $provider): void
+    {
+        $query->where('provider', $provider instanceof SocialProvider ? $provider->identifier() : $provider);
+    }
+
+    public function suffix(): string
+    {
+        return AccountSuffix::getValue($this->data ?? []);
     }
 
     public function image(): ?string
@@ -68,16 +89,84 @@ class Account extends Model
         return [
             'account_id' => $this->id,
             'provider_id' => $this->provider_id,
+            'provider' => $this->provider,
             'name' => $this->name,
             'username' => $this->username,
             'data' => $this->data
         ];
     }
 
-    public function providerOptions()
+    public function getProviderClass()
     {
-        $rules = config('mixpost.social_provider_options');
+        if ($this->providerClass) {
+            return $this->providerClass;
+        }
 
-        return Arr::get($rules, $this->provider);
+        return $this->providerClass = SocialProviderManager::providers()[$this->provider] ?? null;
+    }
+
+    public function relationships(): array
+    {
+        return Arr::get($this->data, 'relationships', []);
+    }
+
+    public function providerName(): string
+    {
+        if (!$provider = $this->getProviderClass()) {
+            return $this->provider;
+        }
+
+        return $provider::name();
+    }
+
+    public function postConfigs(): array
+    {
+        if (!$provider = $this->getProviderClass()) {
+            return SocialProviderPostConfigs::make()->jsonSerialize();
+        }
+
+        return $provider::postConfigs()->jsonSerialize();
+    }
+
+    public function isServiceActive(): bool
+    {
+        if (!$this->getProviderClass()) {
+            return false;
+        }
+
+        if ($this->getProviderClass() === MastodonProvider::class) {
+            return true;
+        }
+
+        return $this->getProviderClass()::service()::isActive();
+    }
+
+    public function isAuthorized(): bool
+    {
+        return $this->authorized;
+    }
+
+    public function isUnauthorized(): bool
+    {
+        return !$this->authorized;
+    }
+
+    public function setUnauthorized(): void
+    {
+        $this->authorized = false;
+        $this->save();
+    }
+
+    public function setAuthorized(): void
+    {
+        $this->authorized = true;
+        $this->save();
+    }
+
+    public function updateAccessToken(array $data): void
+    {
+        $this->access_token = $data;
+
+        $this->save();
     }
 }

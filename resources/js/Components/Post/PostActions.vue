@@ -1,9 +1,12 @@
 <script setup>
 import {computed, inject, ref} from "vue";
-import {format, parseISO} from "date-fns";
+import {useI18n} from "vue-i18n";
+import {parseISO} from "date-fns";
+import useDateLocalize from "../../Composables/useDateLocalize";
 import {router} from "@inertiajs/vue3";
 import {usePage} from "@inertiajs/vue3";
 import usePost from "@/Composables/usePost";
+import usePostValidator from "@/Composables/usePostValidator";
 import useNotifications from "@/Composables/useNotifications";
 import useSettings from "@/Composables/useSettings";
 import ConfirmationModal from "@/Components/Modal/ConfirmationModal.vue";
@@ -16,19 +19,29 @@ import ProviderIcon from "@/Components/Account/ProviderIcon.vue";
 import CalendarIcon from "@/Icons/Calendar.vue"
 import PaperAirplaneIcon from "@/Icons/PaperAirplane.vue"
 import XIcon from "@/Icons/X.vue"
+import WarningButton from "../Button/WarningButton.vue";
+import Forward from "../../Icons/Forward.vue";
+
+const {t: $t} = useI18n()
 
 const props = defineProps({
     form: {
         required: true,
         type: Object
+    },
+    hasAvailableTimes: {
+        type: Boolean,
+        default: false,
     }
 });
 
-const {postId, editAllowed, accountsHitTextLimit, accountsHitMediaLimit} = usePost();
+const {postId, editAllowed} = usePost();
+const {validationPassed} = usePostValidator();
+const {translatedFormat} = useDateLocalize();
 
 const emit = defineEmits(['submit'])
 
-const postCtx = inject('postCtx')
+const workspaceCtx = inject('workspaceCtx');
 
 const timePicker = ref(false);
 
@@ -36,7 +49,7 @@ const {timeFormat, weekStartsOn} = useSettings();
 
 const scheduleTime = computed(() => {
     if (props.form.date && props.form.time) {
-        return format(new Date(parseISO(props.form.date + ' ' + props.form.time)), `E, MMM do, 'at' ${timeFormat === 24 ? 'kk:mm' : 'h:mmaaa'}`, {
+        return translatedFormat(new Date(parseISO(props.form.date + ' ' + props.form.time)), `E, MMM do, ${timeFormat === 24 ? 'kk:mm' : 'h:mmaaa'}`, {
             weekStartsOn: weekStartsOn
         });
     }
@@ -55,22 +68,41 @@ const isLoading = ref(false);
 const canSchedule = computed(() => {
     return (postId.value && props.form.accounts.length) &&
         editAllowed.value &&
-        !accountsHitTextLimit.value.length &&
-        !accountsHitMediaLimit.value.length;
+        validationPassed.value;
 });
 
 const schedule = (postNow = false) => {
     isLoading.value = true;
 
-    axios.post(route('mixpost.posts.schedule', {post: postId.value}), {
+    axios.post(route('mixpost.posts.schedule', {workspace: workspaceCtx.id, post: postId.value}), {
         postNow
     }).then((response) => {
         notify('success', response.data, {
-            name: 'View in calendar',
-            href: route('mixpost.calendar', {date: props.form.date})
+            name: $t("post.view_in_calendar"),
+            href: route('mixpost.calendar', {workspace: workspaceCtx.id, date: props.form.date})
         });
 
-        router.visit(route('mixpost.posts.index'));
+        router.visit(route('mixpost.posts.index', {workspace: workspaceCtx.id}));
+    }).catch((error) => {
+        handleValidationError(error);
+    }).finally(() => {
+        isLoading.value = false;
+    })
+}
+
+const addToQueue = () => {
+    isLoading.value = true;
+
+    axios.post(route('mixpost.posts.addToQueue', {
+        workspace: workspaceCtx.id,
+        post: postId.value
+    }), {}).then((response) => {
+        notify('success', response.data.message, {
+            name: $t("post.view_in_calendar"),
+            href: route('mixpost.calendar', {workspace: workspaceCtx.id, date: response.data.date})
+        });
+
+        router.visit(route('mixpost.posts.index', {workspace: workspaceCtx.id}));
     }).catch((error) => {
         handleValidationError(error);
     }).finally(() => {
@@ -93,7 +125,7 @@ const handleValidationError = (error) => {
     }
 
     if (mustRefreshPage) {
-        router.visit(route('mixpost.posts.edit', {post: postId.value}));
+        router.visit(route('mixpost.posts.edit', {workspace: workspaceCtx.id, post: postId.value}));
     }
 }
 
@@ -110,57 +142,72 @@ const accounts = computed(() => {
 
             <div class="flex items-center" role="group">
                 <SecondaryButton size="md"
-                                 :class="{'!normal-case border-r-indigo-800 rounded-r-none': scheduleTime, '!rounded-r-lg': !canSchedule}"
+                                 :hiddenTextOnSmallScreen="true"
+                                 :class="{ '!normal-case border-r-primary-800 ltr:rounded-r-none rtl:rounded-l-none': scheduleTime, 'ltr:!rounded-r-lg rtl:!rounded-l-lg': !canSchedule }"
                                  @click="timePicker = true">
-                    <CalendarIcon class="sm:mr-xs"/>
-                    <span class="hidden sm:block">{{ scheduleTime ? scheduleTime : 'Pick time' }}</span>
+                    <template #icon>
+                        <CalendarIcon/>
+                    </template>
+
+                    {{ scheduleTime ? scheduleTime : $t("post.pick_time") }}
                 </SecondaryButton>
 
                 <template v-if="scheduleTime && canSchedule">
-                    <SecondaryButton size="md"
-                                     @click="clearScheduleTime"
-                                     v-tooltip="'Clear time'"
-                                     class="rounded-l-none border-l-0 hover:text-red-500 !px-2">
+                    <SecondaryButton size="md" @click="clearScheduleTime" v-tooltip="$t('post.clear_time')"
+                                     class="ltr:rounded-l-none ltr:border-l-0 rtl:rounded-r-none rtl:border-r-0 hover:text-red-500 !px-2">
                         <XIcon/>
                     </SecondaryButton>
                 </template>
 
-                <PickTime :show="timePicker"
-                          :date="form.date"
-                          :time="form.time"
-                          :isSubmitActive="editAllowed"
-                          @close="timePicker = false"
-                          @update="form.date = $event.date; form.time = $event.time;"/>
+                <PickTime :show="timePicker" :date="form.date" :time="form.time" :isSubmitActive="editAllowed"
+                          @close="timePicker = false" @update="form.date = $event.date; form.time = $event.time;"/>
             </div>
 
             <template v-if="editAllowed">
                 <PrimaryButton @click="scheduleTime ? schedule() : confirmationPostNow = true"
-                               :disabled="!canSchedule || isLoading"
-                               :isLoading="isLoading"
-                               size="md">
-                    <PaperAirplaneIcon class="mr-xs"/>
-                    {{ scheduleTime ? 'Schedule' : 'Post now' }}
+                               :hiddenTextOnSmallScreen="true"
+                               :disabled="!canSchedule || isLoading" :isLoading="isLoading" size="md">
+                    <template #icon>
+                        <PaperAirplaneIcon/>
+                    </template>
+
+                    {{ scheduleTime ? $t("post.schedule") : $t("post.post_now") }}
                 </PrimaryButton>
+
+                <template v-if="hasAvailableTimes">
+                    <WarningButton @click="addToQueue"
+                                   :hiddenTextOnSmallScreen="true"
+                                   :disabled="!canSchedule || isLoading" size="md">
+                        <template #icon>
+                            <Forward/>
+                        </template>
+
+                        {{ $t("post.add_to_queue") }}
+                    </WarningButton>
+                </template>
             </template>
         </div>
 
         <ConfirmationModal :show="confirmationPostNow" @close="confirmationPostNow = false">
             <template #header>
-                Confirm publication
+                {{ $t("post.confirm_publication") }}
             </template>
             <template #body>
-                This post will be immediately published to the following social accounts. Are you sure?
+                {{ $t("post.now_confirm_publication") }}
 
                 <div class="mt-sm flex flex-wrap items-center gap-xs">
                     <Badge v-for="account in accounts" :key="account.id">
-                        <ProviderIcon :provider="account.provider" class="!w-4 !h-4 mr-xs"/>
+                        <ProviderIcon :provider="account.provider" class="mr-xs"/>
                         {{ account.name }}
                     </Badge>
                 </div>
             </template>
             <template #footer>
-                <SecondaryButton @click="confirmationPostNow = false" class="mr-xs">Cancel</SecondaryButton>
-                <PrimaryButton :disabled="isLoading" :isLoading="isLoading" @click="schedule(true)">Post now
+                <SecondaryButton @click="confirmationPostNow = false" class="mr-xs">{{ $t("general.cancel") }}
+                </SecondaryButton>
+                <PrimaryButton :disabled="isLoading" :isLoading="isLoading" @click="schedule(true)"> {{
+                        $t("post.post_now")
+                    }}
                 </PrimaryButton>
             </template>
         </ConfirmationModal>

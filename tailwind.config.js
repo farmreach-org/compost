@@ -8,6 +8,7 @@ module.exports = {
         './resources/views/**/*.blade.php',
         './resources/js/**/*.vue',
         './resources/js/**/*.js',
+        './resources/lang/**/*.php',
     ],
     theme: {
         extend: {
@@ -15,6 +16,21 @@ module.exports = {
                 sans: ['Inter', ...defaultTheme.fontFamily.sans],
             },
             colors: {
+                primary: {
+                    "50": "var(--color-primary-50)",
+                    "100": "var(--color-primary-100)",
+                    "200": "var(--color-primary-200)",
+                    // "300": "#958FD6",
+                    // "400": "#726AC8",
+                    "500": 'var(--color-primary-500)',
+                    // "600": "#3F3795",
+                    "700": "var(--color-primary-700)",
+                    "800": "var(--color-primary-800)",
+                    "900": "var(--color-primary-900)"
+                },
+                'primary-context': "var(--color-primary-context)",
+                'alert': "var(--color-alert)",
+                'alert-context': "var(--color-alert-context)",
                 stone: {
                     "50": "#FFFFFF",
                     "100": "#FFFFFF",
@@ -63,22 +79,16 @@ module.exports = {
                     "800": "#0B818E",
                     "900": "#064047"
                 },
-                indigo: {
-                    "50": "#EDECF8",
-                    "100": "#DCDAF1",
-                    "200": "#B8B4E4",
-                    "300": "#958FD6",
-                    "400": "#726AC8",
-                    "500": "#4F46BB",
-                    "600": "#3F3795",
-                    "700": "#2F2970",
-                    "800": "#1F1B4B",
-                    "900": "#100E25"
-                },
                 facebook: '#1877f2',
                 twitter: '#000000',
                 mastodon: '#6364FF',
-                farminsta: '#277450'
+                instagram: '#E4405F',
+                google: '#4285F4',
+                youtube: '#FF0000',
+                pinterest: '#BD081C',
+                linkedin: '#0A66C2',
+                tiktok: '#000000',
+                openai: '#1a7f64',
             },
             boxShadow: {
                 'mix': '0 5px 10px rgb(55 55 89 / 8%)',
@@ -94,8 +104,11 @@ module.exports = {
             gridTemplateColumns: {
                 'week-time-sm': '48px repeat(7, 1fr)',
                 'week-time': '70px repeat(7, 1fr)'
+            },
+            animation: {
+                'spin-slow': 'spin 8s linear infinite',
             }
         },
     },
-    plugins: [require('@tailwindcss/forms')],
+    plugins: [require('@tailwindcss/forms'), require('@tailwindcss/aspect-ratio')],
 };

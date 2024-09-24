@@ -4,6 +4,7 @@ namespace Inovector\Mixpost;
 
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 use Inovector\Mixpost\Models\Setting;
@@ -20,8 +21,8 @@ class Settings
     public function form(): array
     {
         return [
+            'locale' => Util::config('default_locale'),
             'timezone' => 'UTC',
-            'date_format' => 'human',
             'time_format' => 12,
             'week_starts_on' => 1,
             'default_accounts' => [],
@@ -31,23 +32,24 @@ class Settings
     public function rules(): array
     {
         return [
+            'locale' => ['required', Rule::in(Arr::pluck(Util::config('locales'), 'long'))],
             'timezone' => ['required', 'timezone'],
             'time_format' => ['required', Rule::in([12, 24])],
             'week_starts_on' => ['required', Rule::in([0, 1])],
         ];
     }
 
-    public function put(string $name, mixed $default = null): void
+    public function put(string $name, mixed $value = null, ?int $userId = null): void
     {
-        Cache::put($this->resolveCacheKey($name), $default);
+        Cache::put($this->resolveCacheKey($name, $userId), $value);
     }
 
-    public function get(string $name)
+    public function get(string $name, ?int $userId = null)
     {
-        return $this->getFromCache($name, function () use ($name) {
-            $dbRecord = Setting::where('name', $name)->first();
+        return $this->getFromCache($name, function () use ($name, $userId) {
+            $record = Setting::where('user_id', $userId ?: Auth::id())->where('name', $name)->first();
 
-            $defaultPayload = $dbRecord ? $dbRecord->payload : $this->form()[$name];
+            $defaultPayload = $record ? $record->payload : $this->form()[$name];
 
             $this->put($name, $defaultPayload);
 
@@ -55,32 +57,34 @@ class Settings
         });
     }
 
-    public function all(): array
+    public function all(?int $userId = null): array
     {
-        return Arr::map($this->form(), function ($payload, $name) {
-            return $this->get($name);
+        return Arr::map($this->form(), function ($payload, $name) use ($userId) {
+            return $this->get($name, $userId);
         });
     }
 
-    public function getFromCache(string $name, mixed $default = null)
+    public function getFromCache(string $name, mixed $default = null, ?int $userId = null)
     {
-        return Cache::get($this->resolveCacheKey($name), $default);
+        return Cache::get($this->resolveCacheKey($name, $userId), $default);
     }
 
-    public function forget(string $name): void
+    public function forget(string $name, ?int $userId = null): void
     {
-        Cache::forget($this->resolveCacheKey($name));
+        Cache::forget($this->resolveCacheKey($name, $userId));
     }
 
-    public function forgetAll(): void
+    public function forgetAll(?int $userId = null): void
     {
         foreach ($this->form() as $name => $payload) {
-            $this->forget($name);
+            $this->forget($name, $userId);
         }
     }
 
-    private function resolveCacheKey(string $key): string
+    private function resolveCacheKey(string $key, ?int $userId = null): string
     {
-        return $this->config->get('mixpost.cache_prefix') . ".settings.$key";
+        $userId = $userId ?: Auth::id();
+
+        return $this->config->get('mixpost.cache_prefix') . ".settings.$userId.$key";
     }
 }

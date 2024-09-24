@@ -9,11 +9,13 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
+use Inovector\Mixpost\Contracts\QueueWorkspaceAware;
+use Inovector\Mixpost\Facades\WorkspaceManager;
 use Inovector\Mixpost\Models\Account;
 use Inovector\Mixpost\Models\ImportedPost;
 use Inovector\Mixpost\Models\Metric;
 
-class ProcessTwitterMetricsJob implements ShouldQueue
+class ProcessTwitterMetricsJob implements ShouldQueue, QueueWorkspaceAware
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -28,19 +30,21 @@ class ProcessTwitterMetricsJob implements ShouldQueue
 
     public function handle()
     {
-        $items = ImportedPost::select('created_at',
+        $items = ImportedPost::select(
+            DB::raw('DATE(created_at) as date'),
             DB::raw('SUM(JSON_EXTRACT(metrics, "$.likes")) as likes'),
             DB::raw('SUM(JSON_EXTRACT(metrics, "$.replies")) as replies'),
             DB::raw('SUM(JSON_EXTRACT(metrics, "$.retweets")) as retweets'),
             DB::raw('SUM(JSON_EXTRACT(metrics, "$.impressions")) as impressions'))
             ->where('account_id', $this->account->id)
-            ->groupBy('created_at')
+            ->groupBy('date')
             ->cursor();
 
         $data = $items->map(function ($item) {
             return [
+                'workspace_id' => WorkspaceManager::current()->id,
                 'account_id' => $this->account->id,
-                'date' => $item->created_at,
+                'date' => $item->date,
                 'data' => json_encode([
                     'likes' => $item->likes,
                     'replies' => $item->replies,
@@ -50,6 +54,6 @@ class ProcessTwitterMetricsJob implements ShouldQueue
             ];
         });
 
-        Metric::upsert($data->toArray(), ['data'], ['account_id', 'date']);
+        Metric::upsert($data->toArray(), ['data'], ['workspace_id', 'account_id', 'date']);
     }
 }

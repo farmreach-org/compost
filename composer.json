@@ -1,36 +1,42 @@
 {
-    "name": "farminsta/compost",
+    "name": "inovector/mixpost-pro-team",
     "description": "Self-hosted social media management software",
     "keywords": [
         "inovector",
         "mixpost",
-        "social",
+        "mixpost-pro",
+        "mixpost-pro-team",
         "scheduling",
         "laravel"
     ],
-    "homepage": "https://github.com/inovector/mixpost",
-    "license": "MIT",
+    "homepage": "https://mixpost.app",
     "authors": [
         {
             "name": "Dima Botezatu",
             "email": "dima@inovector.com",
+            "homepage": "https://inovector.com",
             "role": "Developer"
         }
     ],
     "require": {
         "php": "^8.1",
         "ext-fileinfo": "*",
-        "guzzlehttp/guzzle": "^7.5",
+        "bacon/bacon-qr-code": "^2.0",
+        "guzzlehttp/guzzle": "^7.8",
         "illuminate/contracts": "^9.28|^10.0",
         "inertiajs/inertia-laravel": "^0.6.9",
         "inovector/twitteroauth": "^7.0",
         "intervention/image": "^2.7",
+        "laravel/horizon": "^5.0",
+        "openai-php/client": "^0.8.4",
         "php-ffmpeg/php-ffmpeg": "^1.0",
+        "pragmarx/google2fa": "^8.0",
         "spatie/laravel-package-tools": "^1.14",
         "spatie/temporary-directory": "^2.1",
         "tightenco/ziggy": "1.*"
     },
     "require-dev": {
+        "laradumps/laradumps": "^2.1",
         "nunomaduro/collision": "^6.0",
         "orchestra/testbench": "^7.0",
         "pestphp/pest": "^1.21",
@@ -65,17 +71,15 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "phpstan/extension-installer": true
+            "phpstan/extension-installer": true,
+            "php-http/discovery": true
         }
     },
     "extra": {
         "laravel": {
             "providers": [
                 "Inovector\\Mixpost\\MixpostServiceProvider"
-            ],
-            "aliases": {
-                "Mixpost": "Inovector\\Mixpost\\Facades\\Mixpost"
-            }
+            ]
         }
     },
     "minimum-stability": "dev",

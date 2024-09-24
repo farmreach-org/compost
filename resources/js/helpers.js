@@ -1,6 +1,6 @@
 import {isProxy, toRaw} from "vue";
 import {utcToZonedTime} from "date-fns-tz";
-import {format} from "date-fns";
+import useDateLocalize from "./Composables/useDateLocalize";
 
 export function getWindowDimensions() {
     let width = Math.max(
@@ -107,9 +107,28 @@ export function convertTime24to12(time24h, customFormat = 'h:mmaaa') {
 
     date.setHours(hours, minutes);
 
-    return format(date, customFormat);
+    const {translatedFormat} = useDateLocalize();
+
+    return translatedFormat(date, customFormat);
 }
 
 export function toRawIfProxy(obj) {
     return isProxy(obj) ? toRaw(obj) : obj
 }
+
+export function convertLaravelErrorsToString(object) {
+    return Object.keys(object).map((item) => {
+        if (typeof object[item] === 'string') {
+            return object[item];
+        }
+
+        return object[item].join("\n");
+    }).join("\n");
+}
+
+export function extractFirstURL(text) {
+    const urlRegex = /(\bhttps?:\/\/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))/i;
+    const match = text.match(urlRegex);
+    return match ? match[0] : null;
+}
+

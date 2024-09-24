@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, provide, reactive, ref} from "vue";
 import usePostVersions from "@/Composables/usePostVersions";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
@@ -16,6 +16,8 @@ import PostItemActions from "@/Components/Post/PostItemActions.vue";
 import PostStatus from "@/Components/Post/PostStatus.vue";
 import VerticallyScrollableContent from "@/Components/Surface/VerticallyScrollableContent.vue";
 import Badge from "@/Components/DataDisplay/Badge.vue";
+import {extractFirstURL} from "../../helpers";
+import usePostURLMeta from "../../Composables/usePostURLMeta";
 
 const props = defineProps({
     item: {
@@ -31,6 +33,7 @@ const props = defineProps({
 })
 
 const {getOriginalVersion, getAccountVersion} = usePostVersions();
+const {setupURLMetaForAllVersions} = usePostURLMeta();
 
 const content = computed(() => {
     if (!props.item.versions.length) {
@@ -66,6 +69,8 @@ const preview = ref(false);
 
 const openPreview = () => {
     preview.value = true;
+
+    setupURLMetaForAllVersions(props.item.versions);
 }
 
 const closePreview = () => {
@@ -80,11 +85,11 @@ const closePreview = () => {
         <TableCell :clickable="true" @click="openPreview">
             <div class="w-44">
                 <PostStatus :value="item.status"/>
-                <div v-if="item.status === 'SCHEDULED'" class="text-sm mt-xs text-gray-500">{{
+                <div v-if="item.status === 'scheduled'" class="text-sm mt-xs text-gray-500">{{
                         item.scheduled_at.human
                     }}
                 </div>
-                <div v-if="item.status === 'PUBLISHED'" class="text-sm mt-xs text-gray-500">{{
+                <div v-if="item.status === 'published'" class="text-sm mt-xs text-gray-500">{{
                         item.published_at.human
                     }}
                 </div>
@@ -112,6 +117,7 @@ const closePreview = () => {
                 <div v-for="(account, index) in item.accounts.slice(0, 3)" :key="account.id"
                      :class="{'-ml-6': index > 0}">
                     <Account :provider="account.provider"
+                             :name="account.name"
                              :img-url="account.image"
                              :active="true"
                              v-tooltip="account.name"
@@ -128,6 +134,7 @@ const closePreview = () => {
                                 <DropdownItem as="div">
                                     <span class="mr-xs">
                                         <Account :provider="account.provider"
+                                                 :name="account.name"
                                                  :img-url="account.image"
                                                  :active="true"/>
                                     </span>
@@ -140,7 +147,10 @@ const closePreview = () => {
             </div>
         </TableCell>
         <TableCell>
-            <PostItemActions :item-id="item.id"/>
+            {{ item.user.name }}
+        </TableCell>
+        <TableCell>
+            <PostItemActions :itemId="item.id" :trashed="item.trashed"/>
         </TableCell>
 
         <DialogModal :show="preview" :scrollableBody="true" @close="closePreview">
@@ -155,9 +165,9 @@ const closePreview = () => {
             <template #footer>
                 <template v-if="preview">
                     <div class="mr-xs flex items-center">
-                        <PostItemActions :item-id="item.id"/>
+                        <PostItemActions :itemId="item.id" :trashed="item.trashed"/>
                     </div>
-                    <SecondaryButton @click="closePreview">Close</SecondaryButton>
+                    <SecondaryButton @click="closePreview">{{ $t("general.close") }}</SecondaryButton>
                 </template>
             </template>
         </DialogModal>

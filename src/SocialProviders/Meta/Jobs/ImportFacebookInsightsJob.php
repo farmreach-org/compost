@@ -12,21 +12,23 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Inovector\Mixpost\Concerns\Job\HasSocialProviderJobRateLimit;
-use Inovector\Mixpost\Concerns\Job\SocialProviderJobFail;
+use Inovector\Mixpost\Concerns\Job\SocialProviderException;
 use Inovector\Mixpost\Concerns\UsesSocialProviderManager;
+use Inovector\Mixpost\Contracts\QueueWorkspaceAware;
 use Inovector\Mixpost\Enums\FacebookInsightType;
+use Inovector\Mixpost\Facades\WorkspaceManager;
 use Inovector\Mixpost\Models\Account;
 use Inovector\Mixpost\Models\FacebookInsight;
 use Inovector\Mixpost\SocialProviders\Meta\FacebookPageProvider;
 use Inovector\Mixpost\Support\SocialProviderResponse;
 
-class ImportFacebookInsightsJob implements ShouldQueue
+class ImportFacebookInsightsJob implements ShouldQueue, QueueWorkspaceAware
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     use UsesSocialProviderManager;
     use HasSocialProviderJobRateLimit;
-    use SocialProviderJobFail;
+    use SocialProviderException;
 
     public $deleteWhenMissingModels = true;
 
@@ -39,6 +41,14 @@ class ImportFacebookInsightsJob implements ShouldQueue
 
     public function handle(): void
     {
+        if ($this->account->isUnauthorized()) {
+            return;
+        }
+
+        if (!$this->account->isServiceActive()) {
+            return;
+        }
+
         if ($retryAfter = $this->rateLimitExpiration()) {
             $this->release($retryAfter);
 
@@ -50,6 +60,13 @@ class ImportFacebookInsightsJob implements ShouldQueue
          * @var SocialProviderResponse $response
          */
         $response = $this->connectProvider($this->account)->getPageInsights();
+
+        if ($response->isUnauthorized()) {
+            $this->account->setUnauthorized();
+            $this->captureException($response);
+
+            return;
+        }
 
         if ($response->hasExceededRateLimit()) {
             $this->storeRateLimitExceeded($response->retryAfter(), $response->isAppLevel());
@@ -63,7 +80,7 @@ class ImportFacebookInsightsJob implements ShouldQueue
         }
 
         if ($response->hasError()) {
-            $this->makeFail($response);
+            $this->captureException($response);
 
             return;
         }
@@ -79,6 +96,7 @@ class ImportFacebookInsightsJob implements ShouldQueue
     {
         $data = Arr::map($items, function ($item) use ($type) {
             return [
+                'workspace_id' => WorkspaceManager::current()->id,
                 'account_id' => $this->account->id,
                 'type' => $type,
                 'date' => Carbon::parse($item['end_time'], 'UTC')->toDateString(),
@@ -86,6 +104,6 @@ class ImportFacebookInsightsJob implements ShouldQueue
             ];
         });
 
-        FacebookInsight::upsert($data, ['account_id', 'type', 'date'], ['value']);
+        FacebookInsight::upsert($data, ['workspace_id', 'account_id', 'type', 'date'], ['value']);
     }
 }

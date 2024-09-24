@@ -2,12 +2,12 @@
 
 namespace Inovector\Mixpost\Support;
 
-use App\Services\LinkService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Inovector\Mixpost\Models\Account;
 use Inovector\Mixpost\Models\Media;
 use Inovector\Mixpost\Models\Post;
+use Inovector\Mixpost\Models\Variable;
 
 class PostContentParser
 {
@@ -65,12 +65,18 @@ class PostContentParser
         }
 
         $decode = html_entity_decode($result);
+        $stripTags = strip_tags($decode); // TODO: Add a whitelist of allowed tags (e.g. <3)
 
-        $values = $this->account->values();
-        $user_id = $values['data']['user_id'] ?? '';
-        $link = app()->make(LinkService::class)->generateLink($user_id, 'https://app.farminsta.com/', 'invite')->getFullUrl();
+        $variables = Variable::pluck('value', 'name')->toArray();
 
-        return $link . "\n\n" . strip_tags($decode);
+        $variables['account'] = $this->account->name;
+        $variables['platform'] = $this->account->providerName();
+
+        return str_replace(
+            Arr::map(array_keys($variables), fn($variable) => '{{' . $variable . '}}'),
+            array_values($variables),
+            $stripTags
+        );
     }
 
     public function formatMedia(array $ids): Collection

@@ -3,8 +3,12 @@ import {computed} from "vue";
 import useProviderClassesColor from "@/Composables/useProviderClassesColor";
 import TwitterIcon from "@/Icons/Twitter.vue";
 import FacebookIcon from "@/Icons/Facebook.vue";
+import InstagramIcon from "@/Icons/Instagram.vue";
 import MastodonIcon from "@/Icons/Mastodon.vue";
-import FarminstaIcon from "@/Icons/Farminsta.vue";
+import YoutubeIcon from "@/Icons/Youtube.vue";
+import PinterestIcon from "@/Icons/Pinterest.vue";
+import LinkedinIcon from "@/Icons/Linkedin.vue";
+import TikTokIcon from "@/Icons/TikTok.vue";
 
 const props = defineProps({
     provider: {
@@ -18,8 +22,13 @@ const providers = {
     'facebook': FacebookIcon,
     'facebook_page': FacebookIcon,
     'facebook_group': FacebookIcon,
+    'instagram': InstagramIcon,
     'mastodon': MastodonIcon,
-    'farminsta_reels': FarminstaIcon,
+    'youtube': YoutubeIcon,
+    'pinterest': PinterestIcon,
+    'linkedin': LinkedinIcon,
+    'linkedin_page': LinkedinIcon,
+    'tiktok': TikTokIcon
 };
 
 const component = computed(() => {

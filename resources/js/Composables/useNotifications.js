@@ -1,4 +1,5 @@
 import emitter from "@/Services/emitter";
+import {convertLaravelErrorsToString} from "../helpers";
 
 const useNotifications = () => {
     const notify = (variant, message, button) => {
@@ -8,9 +9,7 @@ const useNotifications = () => {
 
         if (typeof message === 'object') {
             // Convert laravel validation errors to a string
-            const text = Object.keys(message).map((item) => message[item].join("\n")).join("\n");
-
-            emitter.emit('notify', {variant, message: text, button});
+            emitter.emit('notify', {variant, message: convertLaravelErrorsToString(message), button});
         }
     }
 

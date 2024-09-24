@@ -2,20 +2,17 @@
 
 namespace Inovector\Mixpost\Models;
 
-use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Model;
 use Inovector\Mixpost\Facades\Settings as SettingsFacade;
-use Inovector\Mixpost\Models\Scopes\CompostAccountScope;
 
-#[ScopedBy([CompostAccountScope::class])]
 class Setting extends Model
 {
     public $table = 'mixpost_settings';
 
     protected $fillable = [
+        'user_id',
         'name',
-        'payload',
-        'account_id',
+        'payload'
     ];
 
     protected $casts = [
@@ -32,18 +29,6 @@ class Setting extends Model
 
         static::deleted(function ($setting) {
             SettingsFacade::forget($setting->name);
-        });
-
-        static::created(function (?Setting $setting) {
-            if (!$setting->account_id) {
-                $accountId = '';
-                $user = \Auth::guard('web')->user();
-                if ($user) {
-                    $accountId = $user->account_id;
-                }
-                $setting->account_id = $accountId;
-                $setting->save();
-            }
         });
     }
 }

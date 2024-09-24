@@ -2,15 +2,18 @@
 
 namespace Inovector\Mixpost\SocialProviders\Meta\Concerns;
 
-use Illuminate\Support\Collection;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Collection;
 use Inovector\Mixpost\Enums\SocialProviderResponseStatus;
 use Inovector\Mixpost\Support\SocialProviderResponse;
 use Intervention\Image\Facades\Image;
 
+// @deprecated
+// We will remove this feature soon
 trait ManagesFacebookGroupResources
 {
+    use FacebookPostPublication;
+
     public function getAccount(): SocialProviderResponse
     {
         $response = $this->getEntities();
@@ -28,7 +31,7 @@ trait ManagesFacebookGroupResources
 
     public function getEntities(): SocialProviderResponse
     {
-        $response = Http::withToken($this->getAccessToken()['access_token'])
+        $response = $this->getHttpClient()::withToken($this->accessToken())
             ->get("$this->apiUrl/$this->apiVersion/me/groups", [
                 'fields' => 'id,name,cover{source}',
                 'admin_only' => true,
@@ -51,14 +54,14 @@ trait ManagesFacebookGroupResources
 
     public function publishPost(string $text, Collection $media, array $params = []): SocialProviderResponse
     {
-        return parent::publishFacebookPost($text, $media, $params, $this->getAccessToken()['access_token']);
+        return $this->publishFacebookStandardPost($text, $media, $params);
     }
 
     public function getGroupMetrics(): SocialProviderResponse
     {
-        $response = Http::get("$this->apiUrl/$this->apiVersion/{$this->values['provider_id']}", [
+        $response = $this->getHttpClient()::get("$this->apiUrl/$this->apiVersion/{$this->values['provider_id']}", [
             'fields' => 'member_count',
-            'access_token' => $this->getAccessToken()['access_token']
+            'access_token' => $this->accessToken()
         ]);
 
         return $this->buildResponse($response);

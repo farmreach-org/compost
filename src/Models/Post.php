@@ -2,27 +2,37 @@
 
 namespace Inovector\Mixpost\Models;
 
-use Illuminate\Database\Eloquent\Attributes\ScopedBy;
-use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+use Inovector\Mixpost\Concerns\Model\HasUuid;
+use Inovector\Mixpost\Concerns\OwnedByWorkspace;
+use Inovector\Mixpost\Concerns\UsesUserModel;
 use Inovector\Mixpost\Enums\PostScheduleStatus;
 use Inovector\Mixpost\Enums\PostStatus;
-use Inovector\Mixpost\Models\Scopes\CompostAccountScope;
+use Inovector\Mixpost\Support\SocialProviderResponse;
 
-#[ScopedBy([CompostAccountScope::class])]
 class Post extends Model
 {
     use HasFactory;
+    use HasUuid;
+    use OwnedByWorkspace;
+    use SoftDeletes;
+    use UsesUserModel;
 
     public $table = 'mixpost_posts';
 
     protected $fillable = [
+        'uuid',
+        'user_id',
         'status',
+        'schedule_status',
         'scheduled_at',
         'published_at'
     ];
@@ -33,21 +43,6 @@ class Post extends Model
         'scheduled_at' => 'datetime',
         'published_at' => 'datetime',
     ];
-
-    protected static function booted()
-    {
-        static::created(function (?Post $post) {
-            if (!$post->account_id) {
-                $accountId = '';
-                $user = \Auth::guard('web')->user();
-                if ($user) {
-                    $accountId = $user->account_id;
-                }
-                $post->account_id = $accountId;
-                $post->save();
-            }
-        });
-    }
 
     protected function scheduledAt(): Attribute
     {
@@ -66,8 +61,13 @@ class Post extends Model
     public function accounts(): BelongsToMany
     {
         return $this->belongsToMany(Account::class, 'mixpost_post_accounts', 'post_id', 'account_id')
-            ->withPivot(['errors', 'provider_post_id'])
+            ->withPivot(['provider_post_id', 'data', 'errors'])
             ->orderByPivot('id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(self::getUserClass(), 'user_id');
     }
 
     public function versions(): HasMany
@@ -100,6 +100,11 @@ class Post extends Model
     {
         // TODO: check if original content is not empty
         return $this->scheduled_at && !$this->scheduled_at->isPast() && $this->accounts()->exists();
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status->name === PostStatus::DRAFT->name;
     }
 
     public function isScheduled(): bool
@@ -164,5 +169,22 @@ class Post extends Model
         $this->status = PostStatus::FAILED->value;
         $this->schedule_status = PostScheduleStatus::PROCESSED;
         $this->save();
+    }
+
+    public function insertProviderData(Account $account, SocialProviderResponse $response): void
+    {
+        $this->accounts()->updateExistingPivot($account->id, [
+            'provider_post_id' => $response->id,
+            'data' => $response->data ? json_encode($response->data) : null,
+            'errors' => null,
+        ]);
+    }
+
+    public function insertErrors(Account $account, $errors): void
+    {
+        // TODO: Create a column for system error in `mixpost_post_accounts`
+        $this->accounts()->updateExistingPivot($account->id, [
+            'errors' => json_encode($errors)
+        ]);
     }
 }

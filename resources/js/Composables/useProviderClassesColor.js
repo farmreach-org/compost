@@ -3,34 +3,49 @@ import {computed} from "vue";
 const useProviderClassesColor = (provider) => {
     const textClasses = computed(() => {
         return {
-            'twitter': 'text-twitter',
             'facebook': 'text-facebook',
             'facebook_page': 'text-facebook',
             'facebook_group': 'text-facebook',
+            'instagram': 'text-instagram',
             'mastodon': 'text-mastodon',
-            'farminsta_reels': 'text-facebook',
+            'youtube': 'text-youtube',
+            'pinterest': 'text-pinterest',
+            'twitter': 'text-twitter',
+            'linkedin': 'text-linkedin',
+            'linkedin_page': 'text-linkedin',
+            'tiktok': 'text-tiktok',
         }[provider];
     });
 
     const borderClasses = computed(() => {
         return {
-            'twitter': 'border-twitter',
             'facebook': 'border-facebook',
             'facebook_page': 'border-facebook',
             'facebook_group': 'border-facebook',
+            'instagram': 'border-instagram',
             'mastodon': 'border-mastodon',
-            'farminsta_reels': 'border-facebook',
+            'youtube': 'border-youtube',
+            'pinterest': 'border-pinterest',
+            'twitter': 'border-twitter',
+            'linkedin': 'border-linkedin',
+            'linkedin_page': 'border-linkedin',
+            'tiktok': 'border-tiktok',
         }[provider];
     });
 
     const activeBgClasses = computed(() => {
         return {
-            'twitter': 'bg-twitter',
             'facebook': 'bg-facebook',
             'facebook_page': 'bg-facebook',
             'facebook_group': 'bg-facebook',
+            'instagram': 'bg-instagram',
             'mastodon': 'bg-mastodon',
-            'farminsta_reels': 'bg-facebook',
+            'youtube': 'bg-youtube',
+            'pinterest': 'bg-pinterest',
+            'twitter': 'bg-twitter',
+            'linkedin': 'bg-linkedin',
+            'linkedin_page': 'bg-linkedin',
+            'tiktok': 'bg-tiktok',
         }[provider];
     });
 

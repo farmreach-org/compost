@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {inject, ref} from "vue";
 import {router} from "@inertiajs/vue3";
 import useNotifications from "@/Composables/useNotifications";
 import Input from "@/Components/Form/Input.vue";
@@ -7,6 +7,8 @@ import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import HorizontalGroup from "@/Components/Layout/HorizontalGroup.vue";
 import MastodonIcon from "@/Icons/Mastodon.vue";
 import ArrowRightIcon from "@/Icons/ArrowRight.vue";
+
+const workspaceCtx = inject('workspaceCtx');
 
 const {notify} = useNotifications();
 
@@ -29,7 +31,10 @@ const createApp = () => {
 const oAuthRedirect = () => {
     isLoading.value = true;
 
-    router.post(route('mixpost.accounts.add', {provider: 'mastodon'}), {server: server.value}, {
+    router.post(route('mixpost.accounts.add', {
+        workspace: workspaceCtx.id,
+        provider: 'mastodon'
+    }), {server: server.value}, {
         onSuccess() {
             isLoading.value = false;
         }
@@ -63,19 +68,19 @@ const connect = async () => {
 
             <span class="flex flex-col items-start">
                 <span class="font-semibold">Mastodon</span>
-                <span>Connect a new Mastodon profile</span>
+                <span>{{ $t("service.mastodon.connect_profile") }}</span>
             </span>
         </div>
 
         <div v-if="open" class="px-lg py-md">
             <HorizontalGroup>
-                <template #title>Enter your Mastodon server</template>
+                <template #title>{{ $t("service.mastodon.enter_server") }}</template>
                 <Input type="text" v-model="server" placeholder="example.server"/>
             </HorizontalGroup>
 
             <PrimaryButton @click="connect" :disabled="!server || isLoading" :isLoading="isLoading"
                            class="mt-xs md:mt-0">
-                <span class="mr-xs">Next</span>
+                <span class="mr-xs">{{ $t("general.next") }}</span>
                 <span><ArrowRightIcon class="!w-5 !h-5"/></span>
             </PrimaryButton>
         </div>

@@ -1,14 +1,19 @@
 <script setup>
 import {computed} from "vue";
 import usePostVersions from "@/Composables/usePostVersions";
-import PostPreviewTwitter from "@/Components/PostPreview/PostPreviewTwitter.vue"
-import PostPreviewFacebook from "@/Components/PostPreview/PostPreviewFacebook.vue"
+import PostPreviewTwitter from "@/Components/PostPreview/Twitter/PostPreviewTwitter.vue"
+import PostPreviewFacebookPage from "@/Components/PostPreview/Facebook/PostPreviewFacebookPage.vue"
+import PostPreviewFacebookGroup from "@/Components/PostPreview/Facebook/PostPreviewFacebookGroup.vue"
+import PostPreviewInstagram from "@/Components/PostPreview/Instagram/PostPreviewInstagram.vue"
 import PostPreviewMastodon from "@/Components/PostPreview/PostPreviewMastodon.vue"
+import PostPreviewYoutube from "@/Components/PostPreview/PostPreviewYoutube.vue"
+import PostPreviewPinterest from "@/Components/PostPreview/PostPreviewPinterest.vue"
+import PostPreviewLinkedIn from "@/Components/PostPreview/LinkedIn/PostPreviewLinkedIn.vue"
+import PostPreviewTikTok from "@/Components/PostPreview/PostPreviewTikTok.vue"
 import Panel from "@/Components/Surface/Panel.vue";
 import Alert from "@/Components/Util/Alert.vue";
 import ProviderIcon from "../Account/ProviderIcon.vue";
 import ArrowTopRightOnSquare from "../../Icons/ArrowTopRightOnSquare.vue";
-import PostPreviewFarminsta from "@/Components/PostPreview/PostPreviewFarminsta.vue";
 
 const props = defineProps({
     accounts: {
@@ -31,18 +36,38 @@ const previews = computed(() => {
     return props.accounts.map((account) => {
         const accountVersion = getAccountVersion(props.versions, account.id);
 
+        let options = {};
+
+        if (accountVersion && accountVersion.options.hasOwnProperty(account.provider)) {
+            options = accountVersion.options[account.provider];
+        } else {
+            if (defaultVersion.value.options.hasOwnProperty(account.provider)) {
+                options = defaultVersion.value.options[account.provider];
+            }
+        }
+
+        const content = accountVersion ? accountVersion.content : defaultVersion.value.content;
+
         return {
             account,
-            content: accountVersion ? accountVersion.content : defaultVersion.value.content,
+            content: content.length > 0 ? content : null,
+            options,
             providerComponent: {
                 'twitter': PostPreviewTwitter,
-                'facebook_page': PostPreviewFacebook,
-                'facebook_group': PostPreviewFacebook,
+                'facebook_page': PostPreviewFacebookPage,
+                'facebook_group': PostPreviewFacebookGroup,
+                'instagram': PostPreviewInstagram,
                 'mastodon': PostPreviewMastodon,
-                'farminsta_reels': PostPreviewFarminsta,
+                'youtube': PostPreviewYoutube,
+                'pinterest': PostPreviewPinterest,
+                'linkedin': PostPreviewLinkedIn,
+                'linkedin_page': PostPreviewLinkedIn,
+                'tiktok': PostPreviewTikTok
             }[account.provider]
         }
-    });
+    }).filter((preview) => {
+        return preview.content !== null;
+    })
 })
 
 const hasErrors = (errors) => {
@@ -78,16 +103,16 @@ const hasErrors = (errors) => {
                 <div class="absolute right-0 top-0 -mt-sm -mr-xs">
                     <div class="flex items-center">
                         <div v-if="preview.account.external_url"
-                             class="mr-xs flex items-center justify-center p-2 w-7 h-7 rounded-full bg-white border border-gray-200">
+                             class="mr-xs flex items-center justify-center p-xs w-7 h-7 rounded-full bg-white border border-gray-200">
                             <a :href="preview.account.external_url" target="_blank" class="link">
                                 <ArrowTopRightOnSquare class="!w-5 !h-5"/>
                             </a>
                         </div>
 
                         <div
-                            class="flex items-center justify-center p-2 w-7 h-7 rounded-full bg-white border border-gray-200">
+                            class="flex items-center justify-center p-md w-8 h-8 rounded-full bg-white">
                             <div>
-                                <ProviderIcon :provider="preview.account.provider" class="!w-5 !h-5"/>
+                                <ProviderIcon :provider="preview.account.provider"/>
                             </div>
                         </div>
                     </div>
@@ -97,8 +122,8 @@ const hasErrors = (errors) => {
     </template>
     <template v-else>
         <div>
-            <div>Hi 👋</div>
-            <div>Select an account and start writing your post in the left panel to start.</div>
+            <div>{{ $t('general.hi') }} 👋</div>
+            <div>{{ $t('post.select_account') }}</div>
         </div>
         <Panel class="mt-lg">
             <div class="flex items-start">

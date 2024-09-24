@@ -2,7 +2,7 @@
 
 namespace Inovector\Mixpost\SocialProviders\Meta;
 
-use Inovector\Mixpost\Http\Resources\AccountResource;
+use Inovector\Mixpost\Contracts\AccountResource;
 use Inovector\Mixpost\SocialProviders\Meta\Concerns\ManagesFacebookGroupResources;
 use Inovector\Mixpost\SocialProviders\Meta\Concerns\ManagesFacebookOAuth;
 
@@ -14,6 +14,16 @@ class FacebookGroupProvider extends MetaProvider
     use ManagesFacebookGroupResources;
 
     public bool $onlyUserAccount = false;
+
+    public static function name(): string
+    {
+        return 'Facebook';
+    }
+
+    protected function accessToken(): string
+    {
+        return $this->getAccessToken()['access_token'];
+    }
 
     public static function externalPostUrl(AccountResource $accountResource): string
     {

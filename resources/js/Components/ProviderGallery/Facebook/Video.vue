@@ -27,7 +27,7 @@ defineProps({
 
         <video v-if="isOpen" class="w-auto h-full mx-auto" controls autoplay media="">
             <source :src="media.url" :type="media.mime_type">
-            Your browser does not support the video tag.
+            {{ $t('error.browser_video_unsupported') }}
         </video>
     </Box>
 </template>

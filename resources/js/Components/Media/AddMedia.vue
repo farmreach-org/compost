@@ -1,7 +1,6 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, inject, ref} from "vue";
 import useMedia from "@/Composables/useMedia";
-import useNotifications from "@/Composables/useNotifications";
 import DialogModal from "@/Components/Modal/DialogModal.vue"
 import Tabs from "@/Components/Navigation/Tabs.vue"
 import Tab from "@/Components/Navigation/Tab.vue"
@@ -11,8 +10,9 @@ import MediaUploads from "@/Components/Media/MediaUploads.vue";
 import MediaStock from "@/Components/Media/MediaStock.vue";
 import MediaGifs from "@/Components/Media/MediaGifs.vue";
 import Preloader from "@/Components/Util/Preloader.vue"
-
 import XIcon from "@/Icons/X.vue"
+
+const workspaceCtx = inject('workspaceCtx');
 
 const props = defineProps({
     maxSelection: {
@@ -27,8 +27,6 @@ const props = defineProps({
 
 const emit = defineEmits(['insert']);
 
-const {notify} = useNotifications();
-
 const show = ref(false);
 
 const {
@@ -36,7 +34,8 @@ const {
     tabs,
     isDownloading,
     downloadExternal,
-} = useMedia();
+    getMediaCrediting,
+} = useMedia('mixpost.media.fetchStock', {workspace: workspaceCtx.id});
 
 const sources = {
     'uploads': MediaUploads,
@@ -70,16 +69,24 @@ const insert = () => {
     if (toDownload) {
         // Download external media files
         downloadExternal(selectedItems.value.map((item) => {
-            const {id, url, download_data} = item;
-            return {id, url, download_data};
+            const {id, url, source, author, download_data} = item;
+            return {id, url, source, author, download_data};
         }), (response) => {
-            emit('insert', response.data);
+            emit('insert', {
+                items: response.data,
+                crediting: getMediaCrediting(response.data)
+            });
+
             close();
         })
     }
 
     if (!toDownload) {
-        emit('insert', selectedItems.value);
+        emit('insert', {
+            items: selectedItems.value,
+            crediting: getMediaCrediting(selectedItems.value)
+        });
+
         close();
     }
 }
@@ -95,17 +102,17 @@ const insert = () => {
                  :scrollable-body="true"
                  @close="close">
         <template #header>
-            Add Media
+            {{ $t('media.add_media') }}
         </template>
 
         <template #body>
             <Preloader v-if="isDownloading" :opacity="75">
-                Downloading...
+                {{ $t('media.downloading') }}
             </Preloader>
 
             <Tabs>
-                <template v-for="(tabName, tabId) in tabs">
-                    <Tab @click="activeTab = tabId" :active="activeTab === tabId">{{ tabName }}</Tab>
+                <template v-for="tab in tabs">
+                    <Tab @click="activeTab = tab" :active="activeTab === tab">{{ $t(`media.${tab}`) }}</Tab>
                 </template>
             </Tabs>
 
@@ -115,14 +122,17 @@ const insert = () => {
         </template>
 
         <template #footer>
-            <SecondaryButton @click="close" class="mr-xs">Cancel</SecondaryButton>
+            <SecondaryButton @click="close" class="mr-xs rtl:mr-0 rtl:ml-xs">{{ $t('general.cancel') }}</SecondaryButton>
 
             <template v-if="selectedItems.length">
-                <SecondaryButton @click="deselectAll" v-tooltip.top="'Dismiss'" class="mr-xs">
-                    <XIcon class="!w-5 !h-5"/>
+                <SecondaryButton @click="deselectAll" v-tooltip.top="$t('general.dismiss')" class="mr-xs rtl:mr-0 rtl:ml-xs">
+                    <template #icon>
+                        <XIcon/>
+                    </template>
                 </SecondaryButton>
 
-                <PrimaryButton @click="insert">Insert {{ selectedItems.length }} items
+                <PrimaryButton @click="insert">{{ $t('general.insert') }} {{ selectedItems.length }}
+                    {{ $t('general.items') }}
                 </PrimaryButton>
             </template>
         </template>

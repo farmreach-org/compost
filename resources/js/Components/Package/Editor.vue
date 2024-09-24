@@ -1,6 +1,7 @@
 <script setup>
-import {ref, onMounted, onUnmounted, useAttrs, watch} from "vue";
+import {ref, onMounted, useAttrs, watch, onBeforeUnmount} from "vue";
 import {useEditor, EditorContent} from '@tiptap/vue-3'
+import {useI18n} from "vue-i18n";
 import useEditorHelper from "@/Composables/useEditor";
 import emitter from "@/Services/emitter";
 import History from '@tiptap/extension-history'
@@ -9,7 +10,10 @@ import Typography from '@tiptap/extension-typography'
 import StripLinksOnPaste from "@/Extensions/TipTap/StripLinksOnPaste"
 import Hashtag from "@/Extensions/TipTap/Hashtag"
 import UserTag from "@/Extensions/TipTap/UserTag"
+import Variable from "@/Extensions/TipTap/Variable"
 import ClipboardTextParser from "../../Extensions/ProseMirror/ClipboardTextParser";
+
+const {t: $t} = useI18n()
 
 const attrs = useAttrs();
 
@@ -23,7 +27,7 @@ const props = defineProps({
     },
     placeholder: {
         type: String,
-        default: 'Start writing your post...'
+        default: ''
     }
 });
 
@@ -39,7 +43,7 @@ const editor = useEditor({
     extensions: [...defaultExtensions, ...[
         History,
         Placeholder.configure({
-            placeholder: props.placeholder,
+            placeholder: props.placeholder ? props.placeholder : $t('post.start_write'),
         }),
         Typography.configure({
             openDoubleQuote: false,
@@ -49,7 +53,8 @@ const editor = useEditor({
         }),
         StripLinksOnPaste,
         Hashtag,
-        UserTag
+        UserTag,
+        Variable
     ]],
     editorProps: {
         attributes: {
@@ -85,6 +90,13 @@ onMounted(() => {
         }
     });
 
+    emitter.on('replaceContent', e => {
+        if (isEditor(e.editorId)) {
+            editor.value.commands.clearContent();
+            editor.value.commands.insertContent(e.text);
+        }
+    });
+
     emitter.on('focusEditor', e => {
         if (isEditor(e.editorId)) {
             editor.value.commands.focus();
@@ -92,10 +104,11 @@ onMounted(() => {
     });
 });
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
     editor.value.destroy();
     emitter.off('insertEmoji');
     emitter.off('insertContent');
+    emitter.off('replaceContent');
     emitter.off('focusEditor');
 });
 

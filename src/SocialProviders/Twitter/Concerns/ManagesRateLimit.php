@@ -51,9 +51,7 @@ trait ManagesRateLimit
         if (isset($response->status) && $response->status === 401) {
             return $this->response(
                 SocialProviderResponseStatus::UNAUTHORIZED,
-                ['detail' => 'Unauthorized'],
-                $rateLimitAboutToBeExceeded,
-                $usage['retry_after']
+                ['access_token_expired']
             );
         }
 

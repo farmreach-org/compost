@@ -43,7 +43,6 @@ class MediaVideoThumbConversion extends MediaConversion
         $file = $temporaryDirectory->path($this->getFilepath());
         $thumbFilepath = $this->getFilePathWithSuffix('jpg', $file);
 
-        \Log::error('to=' . $this->getToDisk() . '; from=' . $this->getFromDisk() . ' filePath=' . $this->getFilepath());
         MediaFilesystem::copyFromDisk($this->getFilepath(), $this->getFromDisk(), $file);
 
         // Convert
@@ -54,7 +53,7 @@ class MediaVideoThumbConversion extends MediaConversion
 
         $video = $ffmpeg->open($file);
         $duration = $ffmpeg->getFFProbe()->format($file)->get('duration');
-        $seconds = $duration <= $this->atSecond ? 0 : $this->atSecond;
+        $seconds = (int)$duration <= $this->atSecond ? 0 : $this->atSecond;
 
         $frame = $video->frame(TimeCode::fromSeconds($seconds));
         $frame->save($thumbFilepath);

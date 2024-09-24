@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, inject, ref, watch} from "vue";
 import {usePage} from "@inertiajs/vue3";
 import {nanoid} from 'nanoid'
 import Masonry from "@/Components/Layout/Masonry.vue";
@@ -7,6 +7,8 @@ import MediaFile from "@/Components/Media/MediaFile.vue";
 import MediaSelectable from "@/Components/Media/MediaSelectable.vue";
 import Preloader from "@/Components/Util/Preloader.vue"
 import PhotoIcon from "@/Icons/Photo.vue"
+
+const workspaceCtx = inject('workspaceCtx');
 
 const props = defineProps({
     maxSelection: {
@@ -147,7 +149,7 @@ const uploadFile = (file) => {
     formData.append("file", file);
 
     return new Promise((resolve, reject) => {
-        axios.post(route('mixpost.media.upload'), formData)
+        axios.post(route('mixpost.media.upload', {workspace: workspaceCtx.id}), formData)
             .then(function (response) {
                 resolve(response.data);
             })
@@ -176,10 +178,10 @@ const selected = ref([]);
                  class="w-full h-full absolute"></div>
             <PhotoIcon :class="{'text-stone-700': !dragEnter, 'text-cyan-500': dragEnter}"
                        class="!w-16 !h-16 mx-auto mb-xs transition-colors ease-in-out duration-200"/>
-            <div class="text-center mb-1">Drag & drop files here, or
+            <div class="text-center mb-1">{{ $t('media.drag_drop_files') }}
                 <label for="browse"
-                       class="cursor-pointer text-indigo-500 hover:text-indigo-700 active:text-indigo-700 focus:outline-none focus:text-indigo-700 transition-colors ease-in-out duration-200">
-                    Browse
+                       class="cursor-pointer text-primary-500 hover:text-primary-700 active:text-primary-700 focus:outline-none focus:text-primary-700 transition-colors ease-in-out duration-200">
+                    {{ $t('general.browse') }}
                 </label>
             </div>
             <div class="text-sm text-gray-400 text-center">{{ mimeTypes.join(', ') }}</div>

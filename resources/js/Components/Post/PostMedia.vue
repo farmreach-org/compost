@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {startsWith} from "lodash";
+import {clone, startsWith} from "lodash";
 import Draggable from 'vuedraggable'
 import usePost from "@/Composables/usePost";
 import DialogModal from "@/Components/Modal/DialogModal.vue"
@@ -15,9 +15,10 @@ const props = defineProps({
     }
 })
 
+const emits = defineEmits(['updated']);
+
 const {editAllowed} = usePost();
 
-const items = ref([]);
 const showView = ref(false);
 const openedItem = ref({});
 
@@ -37,18 +38,22 @@ const close = () => {
 
 const remove = (id) => {
     const index = props.media.findIndex(item => item.id === id);
-    props.media.splice(index, 1);
+
+    const items = clone(props.media);
+    items.splice(index, 1);
+
+    emits('updated', items);
     close();
 }
 </script>
 <template>
-    <div class="mt-lg">
+    <div :class="{'mt-xs': media.length}">
         <Draggable
             :list="media"
             :disabled="!editAllowed"
             v-bind="{
                 animation: 200,
-                group: 'media',
+                group: 'media'
             }"
             item-key="id"
             class="flex flex-wrap gap-xs"
@@ -63,21 +68,21 @@ const remove = (id) => {
 
     <DialogModal :show="showView" @close="close">
         <template #header>
-            View Media
+            {{ $t('post.view_media') }}
         </template>
 
         <template #body>
             <video v-if="isVideo(openedItem.mime_type)" class="w-auto h-full" controls>
                 <source :src="openedItem.url" :type="openedItem.mime_type">
-                Your browser does not support the video tag.
+                {{ $t('error.browser_video_unsupported') }}
             </video>
 
             <img v-else :src="openedItem.url" alt="Image"/>
         </template>
 
         <template #footer>
-            <SecondaryButton @click="close" class="mr-xs">Close</SecondaryButton>
-            <DangerButton v-if="editAllowed" @click="remove(openedItem.id)">Remove</DangerButton>
+            <SecondaryButton @click="close" class="mr-xs">{{ $t('general.close') }}</SecondaryButton>
+            <DangerButton v-if="editAllowed" @click="remove(openedItem.id)">{{ $t('general.remove') }}</DangerButton>
         </template>
     </DialogModal>
 </template>

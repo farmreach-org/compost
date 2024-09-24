@@ -11,13 +11,10 @@ class EncryptArrayObject implements CastsAttributes
     public function get($model, $key, $value, $attributes): ?ArrayObject
     {
         if (isset($attributes[$key])) {
-            if (empty($attributes[$key])) {
-                return new ArrayObject();
-            }
             return new ArrayObject(json_decode(Crypt::decryptString($attributes[$key]), true));
         }
 
-        return new ArrayObject();
+        return null;
     }
 
     public function set($model, string $key, $value, array $attributes): ?array

@@ -14,7 +14,7 @@ class MediaFilesystem
 
     public static function copyToDisk(string $targetDisk, string $targetFile, string $sourceFile): bool
     {
-        return Storage::disk($targetDisk)->put($targetFile, File::get($sourceFile));
+        return Storage::disk($targetDisk)->put($targetFile, File::get($sourceFile), 'public');
     }
 
     protected static function getStream(string $filepath, string $disk)

@@ -2,6 +2,7 @@
 
 namespace Inovector\Mixpost\SocialProviders\Mastodon\Concerns;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -40,9 +41,17 @@ trait ManagesResources
 
         $postParameters = ['status' => $text];
 
+        if ($lastId = $params['last_id'] ?? null) {
+            $postParameters['in_reply_to_id'] = $lastId;
+        }
+
         $ids = $mediaResponse->ids;
         if (!empty($ids)) {
             $postParameters['media_ids'] = $ids;
+        }
+
+        if (Arr::get($params, 'sensitive', false)) {
+            $postParameters['sensitive'] = true;
         }
 
         $response = $this->getHttpClient()::withToken($this->getAccessToken()['access_token'])
@@ -91,7 +100,7 @@ trait ManagesResources
             if ($id = $response->id) {
                 $ids[] = $id;
             } else {
-                return $this->response(SocialProviderResponseStatus::ERROR, ["File {$item['name']}: could not be uploaded to the mastodon server."]);
+                return $this->response(SocialProviderResponseStatus::ERROR, ['upload_failed']);
             }
         }
 

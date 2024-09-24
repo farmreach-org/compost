@@ -42,7 +42,6 @@ class MediaImageResizeConversion extends MediaConversion
 
     public function handle(): MediaConversionData|null
     {
-        // TODO: Check if works with S3 driver
         $content = $this->filesystem($this->getFromDisk())->get($this->getFilepath());
 
         $image = Image::make($content);

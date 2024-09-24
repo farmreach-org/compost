@@ -1,19 +1,17 @@
 import NProgress from 'nprogress'
 import {computed, nextTick, ref, watch} from "vue";
+import {useI18n} from "vue-i18n";
 import {debounce} from "lodash";
 import useNotifications from "@/Composables/useNotifications";
 
 const useMedia = (routeName = 'mixpost.media.fetchUploads', routeParams = {}) => {
+    const {t: $t} = useI18n();
     const {notify} = useNotifications();
 
     const activeTab = ref('uploads');
 
     const tabs = computed(() => {
-        return {
-            'uploads': 'Upload',
-            'stock': 'Stock Photos',
-            'gifs': 'GIFs'
-        };
+        return ['uploads', 'stock', 'gifs'];
     })
 
     const isLoaded = ref(false);
@@ -78,7 +76,7 @@ const useMedia = (routeName = 'mixpost.media.fetchUploads', routeParams = {}) =>
                 items.value = [...items.value, ...response.data.data];
             }
         }).catch(() => {
-            notify('error', 'Error retrieving media. Try again!');
+            notify('error', $t('media.error_retrieving_media'));
         }).finally(() => {
             NProgress.done();
             isLoaded.value = true;
@@ -95,7 +93,7 @@ const useMedia = (routeName = 'mixpost.media.fetchUploads', routeParams = {}) =>
         }).then((response) => {
             callback(response);
         }).catch(() => {
-            notify('error', 'Error downloading media. Try again!');
+            notify('error', $t('media.error_downloading_media'));
         }).finally(() => {
             isDownloading.value = false;
             NProgress.done();
@@ -105,6 +103,18 @@ const useMedia = (routeName = 'mixpost.media.fetchUploads', routeParams = {}) =>
 
     const removeItems = (ids) => {
         items.value = items.value.filter((item) => !ids.includes(item.id));
+    }
+
+    const getMediaCrediting = (mediaCollection) => {
+        let text = '';
+
+        mediaCollection.forEach((item) => {
+            if (item.source === 'Unsplash') {
+                text += `\nPhoto by ${item.author} on Unsplash`;
+            }
+        });
+
+        return text;
     }
 
     const deletePermanently = (items, callback) => {
@@ -118,7 +128,7 @@ const useMedia = (routeName = 'mixpost.media.fetchUploads', routeParams = {}) =>
         }).then(() => {
             callback();
         }).catch(() => {
-            notify('error', 'Error deleting media. Try again!');
+            notify('error', $t('media.error_deleting_media'));
         }).finally(() => {
             isDeleting.value = false;
             NProgress.done();
@@ -156,6 +166,7 @@ const useMedia = (routeName = 'mixpost.media.fetchUploads', routeParams = {}) =>
         items,
         endlessPagination,
         selected,
+        getMediaCrediting,
         downloadExternal,
         deletePermanently,
         removeItems,

@@ -4,15 +4,18 @@ namespace Inovector\Mixpost\Support;
 
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Inovector\Mixpost\Models\Media;
 use Inovector\Mixpost\Contracts\MediaConversion;
+use League\Flysystem\Local\LocalFilesystemAdapter;
 
 class MediaUploader
 {
     protected UploadedFile $file;
     protected string $disk;
     protected string $path = '';
+    protected ?array $data = null;
     protected array $conversions;
 
     public function __construct(UploadedFile $file)
@@ -54,29 +57,43 @@ class MediaUploader
         return $this;
     }
 
+    public function data(array $array): static
+    {
+        $this->data = !empty($array) ? $array : null;
+
+        return $this;
+    }
+
     public function upload(): array
     {
-        $path = $this->filesystem()->putFile($this->path, $this->file);
-//        $path = \Storage::disk('s3')->putFile($this->path, $this->file, 'public');
-//        $path = $this->file->store($this->path, $this->disk);
+        $path = $this->filesystem()->putFile($this->path, $this->file, 'public');
+
         if (!$path) {
             throw new \Exception("The file was not uploaded. Check your $this->disk driver configuration.");
         }
+
+        $conversions = $this->performConversions($path);
+        $conversionsSize = collect($conversions)->sum('size');
 
         return [
             'name' => $this->file->getClientOriginalName(),
             'mime_type' => $this->file->getMimeType(),
             'size' => $this->file->getSize(),
-            'size_total' => $this->file->getSize() + 0,
+            'size_total' => $this->file->getSize() + $conversionsSize,
             'disk' => $this->disk,
+            'is_local_driver' => $this->filesystem()->getAdapter() instanceof LocalFilesystemAdapter,
             'path' => $path,
-            'conversions' => $this->performConversions($path)
+            'url' => $this->filesystem()->url($path),
+            'conversions' => $conversions,
+            'data' => !empty($this->data) ? $this->data : null,
         ];
     }
 
     public function uploadAndInsert()
     {
-        return Media::create($this->upload());
+        return Media::create(
+            Arr::only($this->upload(), ['name', 'mime_type', 'size', 'size_total', 'disk', 'path', 'conversions', 'data'])
+        );
     }
 
     protected function performConversions(string $filepath): array

@@ -10,22 +10,22 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Inovector\Mixpost\Concerns\Job\HasSocialProviderJobRateLimit;
-use Inovector\Mixpost\Concerns\Job\SocialProviderJobFail;
+use Inovector\Mixpost\Concerns\Job\SocialProviderException;
 use Inovector\Mixpost\Concerns\UsesSocialProviderManager;
+use Inovector\Mixpost\Contracts\QueueWorkspaceAware;
 use Inovector\Mixpost\Models\Account;
 use Inovector\Mixpost\Models\Audience;
 use Inovector\Mixpost\SocialProviders\Meta\FacebookGroupProvider;
 use Inovector\Mixpost\Support\SocialProviderResponse;
-
 // @deprecated
 // We will remove this feature soon
-class ImportFacebookGroupMembersJob implements ShouldQueue
+class ImportFacebookGroupMembersJob implements ShouldQueue, QueueWorkspaceAware
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     use UsesSocialProviderManager;
     use HasSocialProviderJobRateLimit;
-    use SocialProviderJobFail;
+    use SocialProviderException;
 
     public $deleteWhenMissingModels = true;
 
@@ -38,6 +38,14 @@ class ImportFacebookGroupMembersJob implements ShouldQueue
 
     public function handle(): void
     {
+        if ($this->account->isUnauthorized()) {
+            return;
+        }
+
+        if (!$this->account->isServiceActive()) {
+            return;
+        }
+
         if ($retryAfter = $this->rateLimitExpiration()) {
             $this->release($retryAfter);
 
@@ -49,6 +57,13 @@ class ImportFacebookGroupMembersJob implements ShouldQueue
          * @var SocialProviderResponse $response
          */
         $response = $this->connectProvider($this->account)->getGroupMetrics();
+
+        if ($response->isUnauthorized()) {
+            $this->account->setUnauthorized();
+            $this->captureException($response);
+
+            return;
+        }
 
         if ($response->hasExceededRateLimit()) {
             $this->storeRateLimitExceeded($response->retryAfter(), $response->isAppLevel());
@@ -62,7 +77,7 @@ class ImportFacebookGroupMembersJob implements ShouldQueue
         }
 
         if ($response->hasError()) {
-            $this->makeFail($response);
+            $this->captureException($response);
 
             return;
         }
