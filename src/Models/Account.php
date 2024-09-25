@@ -17,6 +17,44 @@ use Inovector\Mixpost\SocialProviders\Mastodon\MastodonProvider;
 use Inovector\Mixpost\Support\AccountSuffix;
 use Inovector\Mixpost\Support\SocialProviderPostConfigs;
 
+/**
+ * Inovector\Mixpost\Models\Account
+ *
+ * @property int $id
+ * @property string $uuid
+ * @property int $workspace_id
+ * @property string $name
+ * @property string|null $username
+ * @property $media
+ * @property string $provider
+ * @property string $provider_id
+ * @property array|null $data
+ * @property bool $authorized
+ * @property \Illuminate\Database\Eloquent\Casts\ArrayObject $access_token
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Inovector\Mixpost\Models\Workspace|null $workspace
+ * @method static Builder|Account byWorkspace(\Illuminate\Database\Eloquent\Model|int $workspace)
+ * @method static \Inovector\Mixpost\Database\Factories\AccountFactory factory($count = null, $state = [])
+ * @method static Builder|Account newModelQuery()
+ * @method static Builder|Account newQuery()
+ * @method static Builder|Account provider(\Inovector\Mixpost\Contracts\SocialProvider|string $provider)
+ * @method static Builder|Account query()
+ * @method static Builder|Account whereAccessToken($value)
+ * @method static Builder|Account whereAuthorized($value)
+ * @method static Builder|Account whereCreatedAt($value)
+ * @method static Builder|Account whereData($value)
+ * @method static Builder|Account whereId($value)
+ * @method static Builder|Account whereMedia($value)
+ * @method static Builder|Account whereName($value)
+ * @method static Builder|Account whereProvider($value)
+ * @method static Builder|Account whereProviderId($value)
+ * @method static Builder|Account whereUpdatedAt($value)
+ * @method static Builder|Account whereUsername($value)
+ * @method static Builder|Account whereUuid($value)
+ * @method static Builder|Account whereWorkspaceId($value)
+ * @mixin \Eloquent
+ */
 class Account extends Model
 {
     use HasFactory;

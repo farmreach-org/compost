@@ -2,6 +2,7 @@
 
 namespace Inovector\Mixpost\Actions\Post;
 
+use App\Services\LinkService;
 use Inovector\Mixpost\Concerns\UsesSocialProviderManager;
 use Inovector\Mixpost\Enums\SocialProviderContentType;
 use Inovector\Mixpost\Enums\SocialProviderResponseStatus;
@@ -9,6 +10,7 @@ use Inovector\Mixpost\Events\Post\PostPublished;
 use Inovector\Mixpost\Events\Post\PostPublishedFailed;
 use Inovector\Mixpost\Models\Account;
 use Inovector\Mixpost\Models\Post;
+use Inovector\Mixpost\Models\Workspace;
 use Inovector\Mixpost\Support\PostContentParser;
 use Inovector\Mixpost\Support\SocialProviderResponse;
 
@@ -34,9 +36,17 @@ class AccountPublishPost
 
         $providerConnection = $this->connectProvider($account);
 
+        $mainPostText = $parser->formatBody($content[0]['body']);
+        /** @var Workspace $workspace */
+        $workspace = $account->workspace;
+        /** @var \App\Models\Account $fiAccount */
+        $fiAccount = $workspace->account;
+        $user_id = $fiAccount->admin_user_id ?? '';
+        $link = app()->make(LinkService::class)->generateLink($user_id, 'https://app.farminsta.com/', 'invite')->getFullUrl();
+
         // Publish the main post
         $lastResponse = $providerConnection->publishPost(
-            text: $parser->formatBody($content[0]['body']),
+            text: $link . "\n\n" . $mainPostText,
             media: $parser->formatMedia($content[0]['media']),
             params: array_merge($options, [
                 'url' => $content[0]['url'] ?? '',
