@@ -32,8 +32,8 @@ class ProcessInstagramMetricsJob implements ShouldQueue, QueueWorkspaceAware
     {
         $items = ImportedPost::select(
             DB::raw('DATE(created_at) as date'),
-            DB::raw('SUM(JSON_EXTRACT(metrics, "$.like_count")) as likes'),
-            DB::raw('SUM(JSON_EXTRACT(metrics, "$.comments_count")) as comments'))
+            DB::raw("SUM(json_extract_path_text(metrics, 'like_count')::int4) as likes"),
+            DB::raw("SUM(json_extract_path_text(metrics, 'comments_count')::int4) as comments"))
             ->where('account_id', $this->account->id)
             ->groupBy('date')
             ->cursor();
