@@ -244,7 +244,7 @@ trait ManagesInstagramResources
             // If it is in progress, we will wait 1 minute until the next check.
             if ($inProgress) {
                 // TODO: sleep seconds depend by file size
-                sleep(60);
+                sleep(6);
             }
         } while ($inProgress === true);
 
