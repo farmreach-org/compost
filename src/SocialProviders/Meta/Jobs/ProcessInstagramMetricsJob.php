@@ -50,6 +50,6 @@ class ProcessInstagramMetricsJob implements ShouldQueue, QueueWorkspaceAware
             ];
         });
 
-        Metric::upsert($data->toArray(), ['data'], ['workspace_id', 'account_id', 'date']);
+        Metric::upsert($data->toArray(), ['workspace_id', 'account_id', 'date'], ['data']);
     }
 }

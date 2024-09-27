@@ -119,6 +119,6 @@ class ImportInstagramMediaJob implements ShouldQueue, QueueWorkspaceAware
             ];
         });
 
-        ImportedPost::upsert($data, ['workspace', 'account_id', 'provider_post_id'], ['content', 'metrics']);
+        ImportedPost::upsert($data, ['workspace_id', 'account_id', 'provider_post_id'], ['content', 'metrics']);
     }
 }
