@@ -33,6 +33,20 @@ return new class extends Migration {
             });
         }
 
+        Schema::dropIfExists('mixpost_audience');
+        Schema::dropIfExists('mixpost_tag_post');
+        Schema::dropIfExists('mixpost_facebook_insights');
+        Schema::dropIfExists('mixpost_imported_posts');
+        Schema::dropIfExists('mixpost_metrics');
+        Schema::dropIfExists('mixpost_post_accounts');
+        Schema::dropIfExists('mixpost_post_versions');
+        Schema::dropIfExists('mixpost_posts');
+        Schema::dropIfExists('mixpost_tags');
+        Schema::dropIfExists('mixpost_services');
+        Schema::dropIfExists('mixpost_settings');
+        Schema::dropIfExists('mixpost_media');
+        Schema::dropIfExists('mixpost_accounts');
+
         Schema::create('mixpost_user_two_factor_auth', function (Blueprint $table) {
             $table->id();
             $table->ulid('user_id')->unsigned()->index();
