@@ -15,6 +15,7 @@ import PackageIcon from "@/Icons/Package.vue"
 import UserMenu from "@/Components/Navigation/UserMenu.vue";
 import DashboardIcon from "@/Icons/Dashboard.vue";
 import WebhooksIcon from "@/Icons/Webhooks.vue";
+import ArrowLeft from '@/Icons/ArrowLeft.vue';
 import RectangleGroup from "../../Icons/RectangleGroup.vue";
 import Forward from "../../Icons/Forward.vue";
 import useWorkspace from "../../Composables/useWorkspace";
@@ -24,7 +25,7 @@ const workspaceCtx = inject('workspaceCtx');
 const {isWorkspaceAdminRole} = useWorkspace();
 </script>
 <template>
-    <div class="w-full h-full flex flex-col py-2xl bg-white border-r border-gray-200">
+    <div class="w-full h-full flex flex-col pt-2xl bg-white border-r border-gray-200">
         <div class="relative mb-12 px-xl">
             <Link :href="route('mixpost.dashboard', {workspace: workspaceCtx.id})">
                 <Logo/>
@@ -120,8 +121,15 @@ const {isWorkspaceAdminRole} = useWorkspace();
             </template>
         </div>
 
-        <div class="px-xl pt-xl">
-            <UserMenu/>
+        <div class="px-xl py-xl mt-xl bg-stone-300 border-t border-stone-600">
+<!--            <UserMenu/>-->
+            <MenuItem :url="'https://console.farminsta.com/'" :external="true"
+                      :active="true">
+                <template #icon>
+                    <ArrowLeft />
+                </template>
+                {{ 'Back' }}
+            </MenuItem>
         </div>
     </div>
 </template>
