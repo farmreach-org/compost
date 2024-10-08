@@ -1,0 +1,1 @@
+import{H as s,N as n}from"./app.17a8bbe4.js";const r=()=>{const t=s(()=>n().props.mixpost.settings);return{getSetting:e=>t.value[e],locale:t.value.locale,timeZone:t.value.timezone,timeFormat:parseInt(t.value.time_format),weekStartsOn:parseInt(t.value.week_starts_on)}};export{r as u};
