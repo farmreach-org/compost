@@ -141,16 +141,16 @@ const accounts = computed(() => {
             <PostTags :items="form.tags" @update="form.tags = $event"/>
 
             <div class="flex items-center" role="group">
-                <SecondaryButton size="md"
-                                 :hiddenTextOnSmallScreen="true"
-                                 :class="{ '!normal-case border-r-primary-800 ltr:rounded-r-none rtl:rounded-l-none': scheduleTime, 'ltr:!rounded-r-lg rtl:!rounded-l-lg': !canSchedule }"
-                                 @click="timePicker = true">
-                    <template #icon>
-                        <CalendarIcon/>
-                    </template>
+<!--                <SecondaryButton size="md"-->
+<!--                                 :hiddenTextOnSmallScreen="true"-->
+<!--                                 :class="{ '!normal-case border-r-primary-800 ltr:rounded-r-none rtl:rounded-l-none': scheduleTime, 'ltr:!rounded-r-lg rtl:!rounded-l-lg': !canSchedule }"-->
+<!--                                 @click="timePicker = true">-->
+<!--                    <template #icon>-->
+<!--                        <CalendarIcon/>-->
+<!--                    </template>-->
 
-                    {{ scheduleTime ? scheduleTime : $t("post.pick_time") }}
-                </SecondaryButton>
+<!--                    {{ scheduleTime ? scheduleTime : $t("post.pick_time") }}-->
+<!--                </SecondaryButton>-->
 
                 <template v-if="scheduleTime && canSchedule">
                     <SecondaryButton size="md" @click="clearScheduleTime" v-tooltip="$t('post.clear_time')"
