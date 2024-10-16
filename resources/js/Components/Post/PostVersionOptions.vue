@@ -3,6 +3,7 @@ import {computed} from "vue";
 import {usePage} from "@inertiajs/vue3";
 import InstagramOptions from "@/Components/ProviderVersionOptions/InstagramOptions.vue";
 import YoutubeOptions from "@/Components/ProviderVersionOptions/YoutubeOptions.vue";
+import FarminstaOptions from "@/Components/ProviderVersionOptions/FarminstaOptions.vue";
 import PinterestOptions from "@/Components/ProviderVersionOptions/PinterestOptions.vue";
 import LinkedinOptions from "@/Components/ProviderVersionOptions/LinkedinOptions.vue";
 import TikTokOptions from "@/Components/ProviderVersionOptions/TikTokOptions.vue";
@@ -88,6 +89,14 @@ const showYoutube = computed(() => {
     return activeVersionHasProvider('youtube');
 });
 
+const showFarminsta = computed(() => {
+    if (props.activeVersion === 0 && isProviderSelected('farminsta')) {
+        return !providerHaveVersion('farminsta');
+    }
+
+    return activeVersionHasProvider('farminsta');
+});
+
 const showPinterest = computed(() => {
     if (props.activeVersion === 0 && isProviderSelected('pinterest')) {
         return !providerHaveVersion('pinterest');
@@ -154,6 +163,10 @@ const tiktokAccounts = computed(() => {
 
         <div v-if="showYoutube" class="pb-md">
             <YoutubeOptions :options="options.youtube"/>
+        </div>
+
+        <div v-if="showFarminsta" class="pb-md">
+            <FarminstaOptions :options="options.farminsta"/>
         </div>
 
         <div v-if="showPinterest" class="pb-md">

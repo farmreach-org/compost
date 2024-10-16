@@ -81,7 +81,8 @@ const providers = {
     'linkedin': LinkedinReports,
     'linkedin_page': LinkedinPageReports,
     'tiktok': TikTokReports,
-    'youtube': YoutubeReports
+    'youtube': YoutubeReports,
+    'farminsta': YoutubeReports
 };
 
 const component = computed(() => {

@@ -23,6 +23,12 @@ const usePostVersions = () => {
                 title,
                 status: 'public'
             },
+            farminsta: {
+                title,
+                description: '',
+                category_id: 1,
+                language: 'en_in',
+            },
             pinterest: {
                 title,
                 link,
