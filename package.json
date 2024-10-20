@@ -20,6 +20,7 @@
         "tailwindcss": "^3.2.6",
         "unplugin-vue-define-options": "^1.2.4",
         "vite": "^3.0.0",
+        "vite-plugin-vue-devtools": "^7.5.2",
         "vue": "^3.2.31"
     },
     "dependencies": {

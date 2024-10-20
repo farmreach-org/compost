@@ -2,6 +2,7 @@
 
 namespace Inovector\Mixpost\Http\Base\Middleware;
 
+use App\Models\Account;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Inertia\Middleware;
@@ -13,6 +14,7 @@ use Inovector\Mixpost\Facades\Theme;
 use Inovector\Mixpost\Features;
 use Inovector\Mixpost\Mixpost;
 use Inovector\Mixpost\Util;
+use Laravel\Pennant\Feature;
 use Tightenco\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
@@ -50,6 +52,17 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request)
     {
+        $features = [];
+        /** @var \App\Models\User $user */
+        $user = $request->user('web');
+        if ($user) {
+            /** @var Account $account */
+            $account = $user->account;
+            if ($account) {
+                $features = Feature::for($account)->all();
+            }
+        }
+
         return array_merge(parent::share($request), [
             'auth' => $this->auth(),
             'ziggy' => function () use ($request) {
@@ -87,9 +100,10 @@ class HandleInertiaRequests extends Middleware
                     'logo' => Theme::config()->get('logo_url'),
                     'colors' => Theme::colors()
                 ],
-                'features' => [
-                    'api_access_tokens' => Features::isApiAccessTokenEnabled()
-                ],
+                'features' => array_merge([
+                    'api_access_tokens' => Features::isApiAccessTokenEnabled(),
+//                    'fi_features' => $features,
+                ], $features),
                 'enterpriseConsole' => [
                     'url' => Mixpost::getEnterpriseConsoleUrl(),
                     'registration_url' => Mixpost::getRegistrationUrl(),

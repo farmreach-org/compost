@@ -5,6 +5,7 @@ import DefineOptions from 'unplugin-vue-define-options/vite'
 import fs from 'fs';
 import { resolve } from 'path';
 import { homedir } from 'os';
+import vueDevTools from 'vite-plugin-vue-devtools'
 
 export default defineConfig(({command, mode}) => {
     // Load current .env-file
@@ -37,6 +38,7 @@ export default defineConfig(({command, mode}) => {
     return {
         publicDir: 'vendor/mixpost',
         plugins: [
+            vueDevTools(),
             laravel({
                 input: 'resources/js/app.js',
                 publicDirectory: 'resources/dist',

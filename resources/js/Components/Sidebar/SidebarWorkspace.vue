@@ -19,10 +19,24 @@ import ArrowLeft from '@/Icons/ArrowLeft.vue';
 import RectangleGroup from "../../Icons/RectangleGroup.vue";
 import Forward from "../../Icons/Forward.vue";
 import useWorkspace from "../../Composables/useWorkspace";
+import useEnabledFeatures from "../../Composables/useEnabledFeatures";
 
 const workspaceCtx = inject('workspaceCtx');
-
+const {features} = useEnabledFeatures();
 const {isWorkspaceAdminRole} = useWorkspace();
+
+
+const  getBackUrl = function () {
+    const isFCM = features.FieldCampaign;
+    // const isDCM = features.fi_features.DigitalCampaign;
+    // const isSM = features.fi_features.ServiceMonitor;
+
+    if (isFCM) {
+        return 'https://console.farminsta.com/'
+    }
+    return 'https://client.farminsta.com/';
+}
+
 </script>
 <template>
     <div class="w-full h-full flex flex-col pt-2xl bg-white border-r border-gray-200">
@@ -121,9 +135,9 @@ const {isWorkspaceAdminRole} = useWorkspace();
             </template>
         </div>
 
-        <div class="px-xl py-xl mt-xl bg-stone-300 border-t border-stone-600">
+        <div class="px-xl py-3 mt-xl bg-stone-300 border-t border-stone-600">
 <!--            <UserMenu/>-->
-            <MenuItem :url="'https://console.farminsta.com/'" :external="true"
+            <MenuItem :url="getBackUrl()" :external="true"
                       :active="true">
                 <template #icon>
                     <ArrowLeft />
