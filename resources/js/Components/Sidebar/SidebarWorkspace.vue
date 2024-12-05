@@ -34,7 +34,7 @@ const  getBackUrl = function () {
     if (isFCM) {
         return 'https://console.farminsta.com/'
     }
-    return 'https://client.farminsta.com/';
+    return 'https://farminsta.com/';
 }
 
 </script>
