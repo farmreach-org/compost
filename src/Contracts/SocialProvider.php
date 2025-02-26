@@ -19,7 +19,7 @@ interface SocialProvider
 
     public static function service(): string;
 
-    public function getAuthUrl(): string;
+    public function getAuthUrl(bool $isReadOnly = false): string;
 
     public function requestAccessToken(array $params): array;
 

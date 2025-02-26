@@ -4,12 +4,19 @@ namespace Inovector\Mixpost\SocialProviders\Meta\Concerns;
 
 trait ManagesFacebookOAuth
 {
-    public function getAuthUrl(): string
+    public function getScopes(bool $isReadOnly) {
+        if ($isReadOnly) {
+            return $this->readOnlyScope ?? $this->scope;
+        }
+        return $this->scope;
+    }
+
+    public function getAuthUrl(bool $isReadOnly = false): string
     {
         $params = [
             'client_id' => $this->clientId,
             'redirect_uri' => $this->redirectUrl,
-            'scope' => $this->scope,
+            'scope' => $this->getScopes($isReadOnly),
             'response_type' => 'code',
             'state' => $this->values['state']
         ];

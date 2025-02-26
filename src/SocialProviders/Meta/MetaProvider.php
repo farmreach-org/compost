@@ -25,6 +25,7 @@ class MetaProvider extends SocialProvider
     protected string $apiVersion;
     protected string $apiUrl = 'https://graph.facebook.com';
     protected string $scope;
+    protected string $readOnlyScope;
 
     public function __construct(Request $request, string $clientId, string $clientSecret, string $redirectUrl, array $values = [])
     {
@@ -48,6 +49,7 @@ class MetaProvider extends SocialProvider
     protected function setScope(): void
     {
         $this->scope = implode(',', $this->getSupportedScopeList());
+        $this->readOnlyScope = 'read_insights,instagram_basic,instagram_manage_insights';
     }
 
     public function getSupportedScopeList(): array
@@ -79,7 +81,7 @@ class MetaProvider extends SocialProvider
         };
     }
 
-    public function getAuthUrl(): string
+    public function getAuthUrl(bool $isReadOnly = false): string
     {
         return '';
     }

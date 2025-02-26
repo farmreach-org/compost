@@ -11,12 +11,22 @@ trait ManagesOAuth
         'https://www.googleapis.com/auth/youtube'
     ];
 
-    public function getAuthUrl(): string
+    public function getScopes(bool $isReadyOnly) {
+        if ($isReadyOnly) {
+            return [
+                'https://www.googleapis.com/auth/youtube.readonly',
+                'https://www.googleapis.com/auth/yt-analytics.readonly'
+            ];
+        }
+        return $this->scope;
+    }
+
+    public function getAuthUrl(bool $isReadOnly = false): string
     {
         $params = [
             'client_id' => $this->clientId,
             'redirect_uri' => $this->redirectUrl,
-            'scope' => implode(' ', $this->scope),
+            'scope' => implode(' ', $this->getScopes($isReadOnly)),
             'state' => $this->values['state'],
             'include_granted_scopes' => 'true',
             'response_type' => 'code',
