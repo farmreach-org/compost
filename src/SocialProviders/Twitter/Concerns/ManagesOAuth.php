@@ -7,7 +7,7 @@ use Illuminate\Validation\ValidationException;
 
 trait ManagesOAuth
 {
-    public function getAuthUrl(): string
+    public function getAuthUrl(bool $isReadOnly = false): string
     {
         try {
             $result = $this->connection->oauth('oauth/request_token', [

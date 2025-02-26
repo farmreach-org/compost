@@ -35,6 +35,8 @@ import Input from "../../../Components/Form/Input.vue";
 import AlertUnconfiguredService from "../../../Components/Util/AlertUnconfiguredService.vue";
 import Alert from "../../../Components/Util/Alert.vue";
 import Flex from "../../../Components/Layout/Flex.vue";
+import Checkbox from "../../Components/Form/Checkbox.vue";
+import Label from "../../../Components/Form/Label.vue";
 
 const {t: $t} = useI18n()
 
@@ -48,6 +50,7 @@ const {notify} = useNotifications();
 const addAccountModal = ref(false);
 const confirmationAccountDeletion = ref(null);
 const accountIsDeleting = ref(false);
+const isReadonly = ref(false);
 
 const updateAccount = (accountUuid) => {
     router.put(
@@ -332,33 +335,39 @@ watch(
         :closeable="true"
         @close="addAccountModal = false"
     >
-        <div class="flex flex-col">
-            <AddFacebookPage
-                v-if="$page.props.is_service_active.facebook"
-            />
-            <AddInstagramAccount
-                v-if="$page.props.is_service_active.facebook"
-            />
-            <AddMastodonAccount/>
-            <AddYoutubeAccount
-                v-if="$page.props.is_service_active.google"
-            />
-            <AddPinterestAccount
-                v-if="$page.props.is_service_active.pinterest"
-            />
-            <AddLinkedinProfile
-                v-if="$page.props.is_service_active.linkedin"
-            />
-            <AddLinkedinPage
-                v-if="
-                    $page.props.is_service_active.linkedin &&
-                    $page.props.additionally.linkedin_supports_pages
-                "
-            />
-            <AddTikTokAccount v-if="$page.props.is_service_active.tiktok"/>
-            <AddTwitterAccount
-                v-if="$page.props.is_service_active.twitter"
-            />
+        <div>
+            <Label>
+                <Checkbox v-model:checked="isReadonly"  />
+                Allow only read-only access
+            </Label>
+            <div class="flex flex-col">
+                <AddFacebookPage :readonly="isReadonly"
+                    v-if="$page.props.is_service_active.facebook"
+                />
+                <AddInstagramAccount :readonly="isReadonly"
+                    v-if="$page.props.is_service_active.facebook"
+                />
+                <AddMastodonAccount/>
+                <AddYoutubeAccount :readonly="isReadonly"
+                    v-if="$page.props.is_service_active.google"
+                />
+                <AddPinterestAccount
+                    v-if="$page.props.is_service_active.pinterest"
+                />
+                <AddLinkedinProfile
+                    v-if="$page.props.is_service_active.linkedin"
+                />
+                <AddLinkedinPage
+                    v-if="
+                        $page.props.is_service_active.linkedin &&
+                        $page.props.additionally.linkedin_supports_pages
+                    "
+                />
+                <AddTikTokAccount v-if="$page.props.is_service_active.tiktok"/>
+                <AddTwitterAccount
+                    v-if="$page.props.is_service_active.twitter"
+                />
+            </div>
         </div>
     </Modal>
 </template>

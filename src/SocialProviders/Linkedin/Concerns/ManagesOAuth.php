@@ -12,7 +12,7 @@ trait ManagesOAuth
 
     /** Scopes are defined in LinkedinProvider **/
 
-    public function getAuthUrl(): string
+    public function getAuthUrl(bool $isReadOnly = false): string
     {
         $params = [
             'client_id' => $this->clientId,

@@ -22,7 +22,7 @@ class AddAccountController extends Controller
 
         AddingAccount::dispatch($provider);
 
-        $url = $provider->getAuthUrl();
+        $url = $provider->getAuthUrl($request->query('readonly', false));
 
         if (Request::inertia()) {
             return Inertia::location($url);

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Http;
 
 trait ManagesOAuth
 {
-    public function getAuthUrl(): string
+    public function getAuthUrl(bool $isReadOnly = false): string
     {
         $params = [
             'client_id' => $this->clientId,

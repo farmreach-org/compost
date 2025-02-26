@@ -18,7 +18,7 @@ trait ManagesOAuth
         'pins:write'
     ];
 
-    public function getAuthUrl(): string
+    public function getAuthUrl(bool $isReadOnly = false): string
     {
         $params = [
             'client_id' => $this->clientId,

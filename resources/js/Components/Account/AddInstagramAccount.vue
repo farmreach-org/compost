@@ -4,9 +4,16 @@ import {Link} from '@inertiajs/vue3'
 import InstagramIcon from "@/Icons/Instagram.vue";
 
 const workspaceCtx = inject('workspaceCtx');
+const props = defineProps({
+    readonly: {
+        type: Boolean,
+        default: false
+    }
+});
+
 </script>
 <template>
-    <Link :href="route('mixpost.accounts.add', {workspace: workspaceCtx.id, provider: 'instagram'})"
+    <Link :href="route('mixpost.accounts.add', {workspace: workspaceCtx.id, provider: 'instagram', readonly: props.readonly})"
           method="post"
           as="button"
           type="button"

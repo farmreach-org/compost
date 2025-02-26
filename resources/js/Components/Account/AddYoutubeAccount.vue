@@ -4,9 +4,16 @@ import {Link} from '@inertiajs/vue3'
 import YoutubeIcon from "@/Icons/Youtube.vue";
 
 const workspaceCtx = inject('workspaceCtx');
+const props = defineProps({
+    readonly: {
+        type: Boolean,
+        default: false
+    }
+});
+
 </script>
 <template>
-    <Link :href="route('mixpost.accounts.add', {workspace: workspaceCtx.id, provider: 'youtube'})"
+    <Link :href="route('mixpost.accounts.add', {workspace: workspaceCtx.id, provider: 'youtube', readonly: props.readonly})"
           method="post"
           as="button"
           type="button"

@@ -25,7 +25,7 @@ trait ManagesOAuth
         return $scope;
     }
 
-    public function getAuthUrl(): string
+    public function getAuthUrl(bool $isReadOnly = false): string
     {
         $params = [
             'client_key' => $this->clientId,
