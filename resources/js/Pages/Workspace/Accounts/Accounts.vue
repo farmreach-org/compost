@@ -336,10 +336,12 @@ watch(
         @close="addAccountModal = false"
     >
         <div>
-            <Label>
-                <Checkbox v-model:checked="isReadonly"  />
-                Allow only read-only access
-            </Label>
+            <div class="flex flex-col px-lg py-4">
+                <Label>
+                    <Checkbox v-model:checked="isReadonly"  />
+                    Allow only read-only access
+                </Label>
+            </div>
             <div class="flex flex-col">
                 <AddFacebookPage :readonly="isReadonly"
                     v-if="$page.props.is_service_active.facebook"
