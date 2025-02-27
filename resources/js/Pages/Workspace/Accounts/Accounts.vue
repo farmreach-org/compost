@@ -35,8 +35,8 @@ import Input from "../../../Components/Form/Input.vue";
 import AlertUnconfiguredService from "../../../Components/Util/AlertUnconfiguredService.vue";
 import Alert from "../../../Components/Util/Alert.vue";
 import Flex from "../../../Components/Layout/Flex.vue";
-import Checkbox from "../../Components/Form/Checkbox.vue";
-import Label from "../../../Components/Form/Label.vue";
+import Checkbox from "@/Components/Form/Checkbox.vue";
+import Label from "@/Components/Form/Label.vue";
 
 const {t: $t} = useI18n()
 
