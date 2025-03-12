@@ -49,7 +49,10 @@ Route::middleware(array_merge([
 ], Mixpost::getWorkspaceMiddlewares()))
     ->prefix('{workspace}')
     ->group(function () {
-        Route::get('/', DashboardController::class)->name('dashboard');
+//        Route::get('/', DashboardController::class)->name('dashboard');
+        Route::get('/', function() {
+            return redirect('posts');
+        })->name('dashboard');
         Route::post('switch', SwitchWorkspaceController::class)->name('switchWorkspace');
         Route::get('reports', ReportsController::class)->name('reports');
 
