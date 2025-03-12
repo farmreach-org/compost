@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Inovector\Mixpost\Enums\WorkspaceUserRole;
+use Inovector\Mixpost\Facades\WorkspaceManager;
 use Inovector\Mixpost\Http\Base\Controllers\Workspace\AccountEntitiesController;
 use Inovector\Mixpost\Http\Base\Controllers\Workspace\AccountsController;
 use Inovector\Mixpost\Http\Base\Controllers\Workspace\AddAccountController;
@@ -49,10 +50,10 @@ Route::middleware(array_merge([
 ], Mixpost::getWorkspaceMiddlewares()))
     ->prefix('{workspace}')
     ->group(function () {
-//        Route::get('/', DashboardController::class)->name('dashboard');
+        Route::get('/dashboard', DashboardController::class)->name('dashboard');
         Route::get('/', function() {
-            return redirect('posts');
-        })->name('dashboard');
+            return redirect()->route('mixpost.posts.index', ['workspace' => WorkspaceManager::current()->uuid]);
+        })->name('home');
         Route::post('switch', SwitchWorkspaceController::class)->name('switchWorkspace');
         Route::get('reports', ReportsController::class)->name('reports');
 
