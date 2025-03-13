@@ -336,10 +336,10 @@ watch(
         @close="addAccountModal = false"
     >
         <div>
-            <div class="flex flex-col px-lg py-4">
+            <div class="flex flex-col px-lg py-6">
                 <Label>
                     <Checkbox v-model:checked="isReadonly"  />
-                    Allow only read-only access
+                    <span class="pl-2">Farminsta can ONLY READ your data</span>
                 </Label>
             </div>
             <div class="flex flex-col">
